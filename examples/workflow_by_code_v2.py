@@ -6,8 +6,16 @@ Qlib Workflow Example with Custom Strategy
 将模型训练和策略回测分离：
 1. train_model() - 训练模型并保存预测结果
 2. run_backtest_only() - 仅运行回测（使用已保存的预测结果）
+3. generate_predictions_for_new_period() - 基于已训练模型为新时间段生成预测
 
-这样修改策略参数时不需要重新训练模型。
+这样修改策略参数或回测时间段时不需要重新训练模型。
+
+新时间段回测流程：
+1. 使用 get_extended_dataset_config 创建新数据集（指定新的 test 时间段）
+2. 从 recorder 加载已训练的模型
+3. 使用 SignalRecord 生成新时间段的预测
+4. 保存到新的 recorder 路径
+5. 使用新 recorder 运行回测
 """
 import os
 from pprint import pprint
@@ -23,9 +31,9 @@ from qlib.tests.config import CSI300_BENCH, CSI300_MARKET, GBDT_MODEL
 from qlib.backtest import backtest as run_backtest
 from qlib.contrib.evaluate import risk_analysis, indicator_analysis
 
-# Import custom strategy and utils
-from strategies import ThresholdTopkDropoutStrategy
-from utils import print_stock_analysis
+# Import custom strategy and utils (optional, comment out if not available)
+# from strategies import ThresholdTopkDropoutStrategy
+# from utils import print_stock_analysis
 
 
 # ============================================================
@@ -264,6 +272,139 @@ def train_model(model_type="gbdt", experiment_name="workflow"):
 
 
 # ============================================================
+# 为新时间段生成预测（不需要重新训练）
+# ============================================================
+
+def generate_predictions_for_new_period(
+    recorder_id=None,
+    experiment_name="workflow",
+    test_start_time=None,
+    test_end_time=None,
+    instruments=CSI300_MARKET,
+    new_experiment_name=None,
+):
+    """
+    基于已训练的模型，为新时间段生成预测
+    
+    使用 get_extended_dataset_config 创建新数据集，从 recorder 加载模型，
+    使用 SignalRecord 生成预测并保存到新的 recorder 路径。
+    
+    Parameters
+    ----------
+    recorder_id : str, optional
+        Recorder ID，如果为 None 则使用最新的 recorder
+    experiment_name : str
+        原始实验名称
+    test_start_time : str, optional
+        新测试时间段的开始时间，格式：'YYYY-MM-DD'
+        如果为 None，使用 BACKTEST_CONFIG 中的 start_time
+    test_end_time : str, optional
+        新测试时间段的结束时间，格式：'YYYY-MM-DD'
+        如果为 None，使用 BACKTEST_CONFIG 中的 end_time
+    instruments : str or list, optional
+        股票池，默认使用 CSI300_MARKET
+    new_experiment_name : str, optional
+        新实验名称，如果为 None 则使用 experiment_name + "_new_period"
+        
+    Returns
+    -------
+    str
+        新 recorder_id
+    """
+    # 初始化 Qlib
+    provider_uri = "~/.qlib/qlib_data/cn_data"
+    try:
+        from qlib.data import D
+        D.calendar(start_time="2020-01-01", end_time="2020-01-02")
+    except Exception:
+        GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
+        qlib.init(provider_uri=provider_uri, region=REG_CN)
+    
+    # 获取 recorder
+    exp = R.get_exp(experiment_name=experiment_name)
+    if recorder_id is None:
+        recorders = exp.list_recorders(rtype=exp.RT_L)
+        if not recorders:
+            raise ValueError(f"实验 '{experiment_name}' 中没有找到 recorder，请先运行 train_model()")
+        
+        if isinstance(recorders, dict):
+            recorder_list = [(rid, rec.info.get("start_time", 0) if hasattr(rec, 'info') else 0) 
+                           for rid, rec in recorders.items()]
+            recorder_list.sort(key=lambda x: x[1], reverse=True)
+            recorder_id = recorder_list[0][0]
+        else:
+            try:
+                sorted_recorders = sorted(
+                    recorders,
+                    key=lambda r: r.info.get("start_time", 0) if hasattr(r, 'info') else 0,
+                    reverse=True
+                )
+                recorder_id = sorted_recorders[0].id if hasattr(sorted_recorders[0], 'id') else sorted_recorders[0]
+            except:
+                recorder_id = recorders[-1].id if hasattr(recorders[-1], 'id') else recorders[-1]
+    
+    recorder = exp.get_recorder(recorder_id=recorder_id)
+    
+    # 加载模型
+    print("\n" + "="*80)
+    print("加载已训练的模型...")
+    print("="*80)
+    model = recorder.load_object("params.pkl")
+    
+    # 确定新的测试时间段
+    _test_start = test_start_time if test_start_time is not None else BACKTEST_CONFIG["start_time"]
+    _test_end = test_end_time if test_end_time is not None else BACKTEST_CONFIG["end_time"]
+    
+    # 使用 get_extended_dataset_config 创建新数据集配置
+    # 保持训练时间段不变，只更新测试时间段和 end_time
+    new_dataset_config = get_extended_dataset_config(
+        test=(_test_start, _test_end),
+        instruments=instruments,
+        end_time=_test_end,  # 确保 end_time 覆盖测试时间段
+    )
+    
+    print(f"\n新数据集配置:")
+    print(f"  测试时间段: {_test_start} ~ {_test_end}")
+    print(f"  股票池: {instruments}")
+    
+    # 创建新数据集
+    dataset = init_instance_by_config(new_dataset_config)
+    
+    # 创建新的实验和 recorder
+    _new_experiment_name = new_experiment_name if new_experiment_name else f"{experiment_name}_new_period"
+    
+    print("\n" + "="*80)
+    print("生成预测并保存到新 recorder...")
+    print("="*80)
+    
+    # 使用 SignalRecord 生成预测（参考训练流程）
+    with R.start(experiment_name=_new_experiment_name):
+        R.log_params(**flatten_dict({
+            "source_recorder_id": recorder_id,
+            "source_experiment": experiment_name,
+            "test_period": (_test_start, _test_end),
+        }))
+        
+        new_recorder = R.get_recorder()
+        new_recorder_id = new_recorder.id
+        
+        # 保存模型和数据集配置
+        new_recorder.save_objects(**{"params.pkl": model, "dataset": dataset})
+        
+        # 生成预测信号（参考训练流程）
+        sr = SignalRecord(model, dataset, new_recorder)
+        sr.generate()
+        
+        print("\n" + "="*80)
+        print(f"预测生成完成！")
+        print(f"  新 Recorder ID: {new_recorder_id}")
+        print(f"  新实验名称: {_new_experiment_name}")
+        print("="*80)
+        
+        return new_recorder_id
+
+
+# ============================================================
 # 回测函数（不需要重新训练）
 # ============================================================
 
@@ -273,6 +414,8 @@ def run_backtest_only(
     topk=20,
     n_drop=2,
     hold_thresh=10,
+    start_time=None,
+    end_time=None,
 ):
     """
     仅运行回测（使用已保存的预测结果）
@@ -289,6 +432,12 @@ def run_backtest_only(
         每天最多替换的股票数量
     hold_thresh : int, optional
         最小持有天数
+    start_time : str, optional
+        回测开始时间，格式：'YYYY-MM-DD'
+        如果为 None，使用 BACKTEST_CONFIG 中的 start_time
+    end_time : str, optional
+        回测结束时间，格式：'YYYY-MM-DD'
+        如果为 None，使用 BACKTEST_CONFIG 中的 end_time
     """
     # 初始化 Qlib
     provider_uri = "~/.qlib/qlib_data/cn_data"
@@ -301,14 +450,19 @@ def run_backtest_only(
         GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
         qlib.init(provider_uri=provider_uri, region=REG_CN)
     
+    # 确定回测时间段
+    _start_time = start_time if start_time is not None else BACKTEST_CONFIG["start_time"]
+    _end_time = end_time if end_time is not None else BACKTEST_CONFIG["end_time"]
+    
     # 使用传入的参数或默认配置
     _topk = topk if topk is not None else STRATEGY_CONFIG["topk"]
     _n_drop = n_drop if n_drop is not None else STRATEGY_CONFIG["n_drop"]
     _hold_thresh = hold_thresh if hold_thresh is not None else STRATEGY_CONFIG["hold_thresh"]
     
     print("\n" + "="*80)
-    print("回测策略配置")
+    print("回测配置")
     print("="*80)
+    print(f"  回测时间段: {_start_time} ~ {_end_time}")
     print(f"  topk: {_topk}")
     print(f"  n_drop: {_n_drop}")
     print(f"  hold_thresh: {_hold_thresh}")
@@ -327,8 +481,8 @@ def run_backtest_only(
             recorder_list = []
             for rid, rec in recorders.items():
                 try:
-                    start_time = rec.info.get("start_time", 0) if hasattr(rec, 'info') else 0
-                    recorder_list.append((rid, start_time))
+                    rec_start_time = rec.info.get("start_time", 0) if hasattr(rec, 'info') else 0
+                    recorder_list.append((rid, rec_start_time))
                 except:
                     recorder_list.append((rid, 0))
             # 按开始时间排序，取最新的
@@ -354,52 +508,50 @@ def run_backtest_only(
         if isinstance(recorders, dict):
             for i, (rid, rec) in enumerate(recorders.items()):
                 try:
-                    start_time = rec.info.get("start_time", "N/A") if hasattr(rec, 'info') else "N/A"
-                    print(f"  [{i}] {rid} (创建时间: {start_time})")
+                    rec_start_time = rec.info.get("start_time", "N/A") if hasattr(rec, 'info') else "N/A"
+                    print(f"  [{i}] {rid} (创建时间: {rec_start_time})")
                 except:
                     print(f"  [{i}] {rid}")
         else:
             for i, rec in enumerate(recorders):
                 rid = rec.id if hasattr(rec, 'id') else rec
                 try:
-                    start_time = rec.info.get("start_time", "N/A") if hasattr(rec, 'info') else "N/A"
-                    print(f"  [{i}] {rid} (创建时间: {start_time})")
+                    rec_start_time = rec.info.get("start_time", "N/A") if hasattr(rec, 'info') else "N/A"
+                    print(f"  [{i}] {rid} (创建时间: {rec_start_time})")
                 except:
                     print(f"  [{i}] {rid}")
     
     recorder = exp.get_recorder(recorder_id=recorder_id)
     
-    # 验证预测结果存在
-    print("\n验证预测结果...")
+    # 检查预测结果
+    print("\n" + "="*80)
+    print("检查预测结果...")
+    print("="*80)
+    
     try:
         pred = recorder.load_object("pred.pkl")
-        print(f"预测数据形状: {pred.shape}")
-        dt_min = pred.index.get_level_values('datetime').min()
-        dt_max = pred.index.get_level_values('datetime').max()
-        print(f"预测数据时间范围: {dt_min} ~ {dt_max}")
-        print(f"回测时间范围: {BACKTEST_CONFIG['start_time']} ~ {BACKTEST_CONFIG['end_time']}")
-        
-        # 检查时间范围是否匹配
-        import pandas as pd
-        bt_start = pd.Timestamp(BACKTEST_CONFIG['start_time'])
-        bt_end = pd.Timestamp(BACKTEST_CONFIG['end_time'])
-        if dt_max < bt_start:
-            print(f"\n" + "!"*80)
-            print(f"错误：预测数据时间范围 ({dt_max}) 早于回测开始时间 ({bt_start})！")
-            print("这会导致回测无法执行任何交易。")
-            print(f"\n请重新训练模型：python workflow_by_code_v2.py train gbdt")
-            print("!"*80)
-            raise ValueError(f"预测数据时间范围不匹配，请重新训练模型")
-        
-        # 显示预测数据样本
-        print(f"\n预测数据前5行:")
-        print(pred.head())
-        print(f"\n预测数据后5行:")
-        print(pred.tail())
+        print(f"已加载预测数据，形状: {pred.shape}")
+        if len(pred) > 0:
+            dt_min = pred.index.get_level_values('datetime').min()
+            dt_max = pred.index.get_level_values('datetime').max()
+            print(f"预测数据时间范围: {dt_min} ~ {dt_max}")
+            print(f"回测时间范围: {_start_time} ~ {_end_time}")
+            
+            # 显示预测数据样本
+            print(f"\n预测数据前5行:")
+            print(pred.head())
+            print(f"\n预测数据后5行:")
+            print(pred.tail())
+        else:
+            raise ValueError("预测数据为空，请先运行 train_model() 或 generate_predictions_for_new_period()")
     except Exception as e:
-        raise ValueError(f"无法加载预测结果: {e}，请先运行 train_model()")
+        raise ValueError(f"无法加载预测结果: {e}，请先运行 train_model() 或 generate_predictions_for_new_period()")
     
     # 构建回测配置
+    backtest_config = BACKTEST_CONFIG.copy()
+    backtest_config["start_time"] = _start_time
+    backtest_config["end_time"] = _end_time
+    
     # 注意：使用 "<PRED>" 占位符，PortAnaRecord 会自动从 recorder 加载 pred.pkl 并替换
     port_analysis_config = {
         "executor": {
@@ -420,7 +572,7 @@ def run_backtest_only(
                 "hold_thresh": _hold_thresh,
             },
         },
-        "backtest": BACKTEST_CONFIG,
+        "backtest": backtest_config,
     }
     
     # 运行回测
@@ -510,7 +662,7 @@ def _save_and_analyze_results(recorder, portfolio_metric_dict, indicator_dict):
 
 def main():
     """
-    主函数 - 演示训练和回测分离
+    主函数 - 演示训练和回测分离，支持新时间段回测
     
     使用方式：
     1. 首次运行或需要重新训练时：
@@ -520,7 +672,7 @@ def main():
        python workflow_by_code_v2.py backtest
        
     3. 或者在 Python 中：
-       from workflow_by_code_v2 import train_model, run_backtest_only
+       from workflow_by_code_v2 import train_model, run_backtest_only, generate_predictions_for_new_period
        
        # 训练（只需运行一次）
        recorder_id = train_model(model_type="gbdt")
@@ -528,6 +680,15 @@ def main():
        # 回测（可以多次运行，修改参数）
        run_backtest_only(topk=20, n_drop=2, hold_thresh=1)
        run_backtest_only(topk=50, n_drop=5, hold_thresh=3)
+       
+       # 为新时间段生成预测
+       new_recorder_id = generate_predictions_for_new_period(
+           test_start_time="2025-01-01",
+           test_end_time="2025-12-31"
+       )
+       
+       # 使用新 recorder 回测
+       run_backtest_only(recorder_id=new_recorder_id, experiment_name="workflow_new_period")
     """
     import sys
     
@@ -541,7 +702,26 @@ def main():
             
         elif command == "backtest":
             # 仅回测
-            run_backtest_only()
+            # run_backtest_only()
+            run_backtest_only(
+                # recorder_id="91e8625c68a94bcaaff7b19b0695092f",
+                recorder_id="9bc75beec25c442c9830551cc401c094",
+                experiment_name="workflow_new_period",
+                start_time="2024-01-01",
+                end_time="2025-12-24",
+            )
+        
+        elif command == "backtest_new_period":
+            # 回测新时间段
+            new_recorder_id = generate_predictions_for_new_period(
+                test_start_time="2024-01-01", test_end_time="2025-12-24",
+            )
+            run_backtest_only(
+                recorder_id=new_recorder_id,
+                experiment_name="workflow_new_period",
+                start_time="2024-01-01",
+                end_time="2025-12-24",
+            )
             
         else:
             print(f"未知命令: {command}")
