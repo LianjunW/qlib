@@ -1,0 +1,27 @@
+# Akshare Collector Configuration
+# 配置文件用于设置代理池等防封禁参数
+
+# 代理列表（可选）
+# 格式: ["http://proxy1:port", "http://proxy2:port", ...]
+# 如果不需要代理，可以留空或注释掉
+# 注意：如果使用 Clash，会自动从 Clash 配置读取本地代理（默认 ~/.config/mihomo/config.yaml）
+proxies:
+  # - "http://127.0.0.1:7890"
+  # - "http://127.0.0.1:7891"
+
+# Clash 配置（可选）
+# 如果设置了 clash_config_path，会优先使用 Clash 本地代理
+# 默认会自动检测以下路径：
+#   - ~/.config/mihomo/config.yaml
+#   - ~/.config/clash/config.yaml
+#   - /root/.config/mihomo/config.yaml
+#   - /root/.config/clash/config.yaml
+# clash_config_path: "/root/.config/mihomo/config.yaml"
+
+# 代理轮换策略（可选）
+# 可选值: round_robin (轮询), random (随机), weighted (加权，根据成功率)
+# proxy_rotation_strategy: "round_robin"
+
+# 其他配置项可以在这里添加
+# 例如：请求超时时间、重试次数等
+

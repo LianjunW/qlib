@@ -50,3 +50,8 @@ tags
 ./pretrain
 .idea/
 .aider*
+.venv
+qlib_env
+*.png
+*.html
+
