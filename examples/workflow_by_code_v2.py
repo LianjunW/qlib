@@ -30,6 +30,7 @@ from qlib.tests.data import GetData
 from qlib.tests.config import CSI300_BENCH, CSI300_MARKET, GBDT_MODEL
 from qlib.backtest import backtest as run_backtest
 from qlib.contrib.evaluate import risk_analysis, indicator_analysis
+from qlib.contrib.report.analysis_model.analysis_model_performance import model_performance_graph
 
 # Import custom strategy and utils (optional, comment out if not available)
 # from strategies import ThresholdTopkDropoutStrategy
@@ -589,6 +590,142 @@ def run_backtest_only(
 
 
 # ============================================================
+# 分层图分析（基于 pred + label 的分组收益分析）
+# ============================================================
+
+def run_layer_analysis(
+    recorder_id=None,
+    experiment_name="workflow",
+    output_dir=None,
+    n_groups=5,
+    graph_names=None,
+):
+    """
+    基于分层图进行回测结果分析
+    
+    将预测分数按大小分为 N 组（默认 5 组），分析各组收益表现，
+    生成 Group1~Group5 累计收益曲线、long-short、long-average 等图表。
+    
+    Parameters
+    ----------
+    recorder_id : str, optional
+        Recorder ID，如果为 None 则使用最新的 recorder
+    experiment_name : str
+        实验名称
+    output_dir : str, optional
+        图表输出目录，如果为 None 则使用当前目录下的 layer_analysis/
+    n_groups : int
+        分组数量，默认 5
+    graph_names : list, optional
+        要生成的图表类型，默认 ["group_return", "pred_ic", "pred_autocorr"]
+        - group_return: 分层累计收益图（Group1~Group5、long-short、long-average）
+        - pred_ic: 信息系数 IC 图
+        - pred_autocorr: 预测自相关图
+        - pred_turnover: 换手率图
+        
+    Returns
+    -------
+    list
+        生成的 plotly Figure 列表
+    """
+    # 初始化 Qlib
+    provider_uri = "~/.qlib/qlib_data/cn_data"
+    try:
+        from qlib.data import D
+        D.calendar(start_time="2020-01-01", end_time="2020-01-02")
+    except Exception:
+        GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
+        qlib.init(provider_uri=provider_uri, region=REG_CN)
+    
+    # 获取 recorder
+    exp = R.get_exp(experiment_name=experiment_name)
+    if recorder_id is None:
+        recorders = exp.list_recorders(rtype=exp.RT_L)
+        if not recorders:
+            raise ValueError(f"实验 '{experiment_name}' 中没有找到 recorder")
+        if isinstance(recorders, dict):
+            recorder_list = [(rid, rec.info.get("start_time", 0) if hasattr(rec, 'info') else 0)
+                           for rid, rec in recorders.items()]
+            recorder_list.sort(key=lambda x: x[1], reverse=True)
+            recorder_id = recorder_list[0][0]
+        else:
+            try:
+                sorted_recorders = sorted(
+                    recorders,
+                    key=lambda r: r.info.get("start_time", 0) if hasattr(r, 'info') else 0,
+                    reverse=True
+                )
+                recorder_id = sorted_recorders[0].id if hasattr(sorted_recorders[0], 'id') else sorted_recorders[0]
+            except Exception:
+                recorder_id = recorders[-1].id if hasattr(recorders[-1], 'id') else recorders[-1]
+    
+    recorder = exp.get_recorder(recorder_id=recorder_id)
+    
+    # 加载 pred 和 label
+    print("\n" + "="*80)
+    print("分层图分析")
+    print("="*80)
+    print(f"  Recorder ID: {recorder_id}")
+    print(f"  实验名称: {experiment_name}")
+    
+    pred = recorder.load_object("pred.pkl")
+    label = recorder.load_object("label.pkl")
+    
+    if pred is None or pred.empty:
+        raise ValueError("无法加载 pred.pkl，请确保已运行 train_model 或 generate_predictions_for_new_period")
+    
+    if label is None or label.empty:
+        raise ValueError("无法加载 label.pkl，分层分析需要 label 数据。请使用 train_model 或 generate_predictions_for_new_period 生成的 recorder")
+    
+    # 构建 pred_label：需要 score 和 label 列，index 为 (instrument, datetime)
+    if isinstance(pred, pd.Series):
+        pred = pred.to_frame("score")
+    elif "score" not in pred.columns:
+        pred = pred.rename(columns={pred.columns[0]: "score"})
+    
+    if isinstance(label, pd.DataFrame):
+        label_series = label.iloc[:, 0]
+    else:
+        label_series = label
+    
+    pred_label = pred.copy()
+    pred_label["label"] = label_series.reindex(pred.index)
+    pred_label = pred_label.dropna(subset=["label", "score"])
+    
+    if pred_label.empty:
+        raise ValueError("pred 与 label 合并后无有效数据，请检查时间范围是否一致")
+    
+    print(f"  有效数据量: {len(pred_label)} 条")
+    print(f"  时间范围: {pred_label.index.get_level_values('datetime').min()} ~ {pred_label.index.get_level_values('datetime').max()}")
+    
+    # 生成分层图
+    if graph_names is None:
+        graph_names = ["group_return", "pred_ic", "pred_autocorr"]
+    
+    figure_list = model_performance_graph(
+        pred_label=pred_label,
+        N=n_groups,
+        graph_names=graph_names,
+        show_notebook=False,
+    )
+    
+    # 保存图表到文件
+    _output_dir = output_dir or os.path.join(os.getcwd(), "layer_analysis")
+    os.makedirs(_output_dir, exist_ok=True)
+    
+    for i, fig in enumerate(figure_list):
+        out_path = os.path.join(_output_dir, f"layer_analysis_{i+1}.html")
+        fig.write_html(out_path)
+        print(f"  已保存: {out_path}")
+    
+    print("\n" + "="*80)
+    print("分层图分析完成！")
+    print("="*80)
+    
+    return figure_list
+
+
+# ============================================================
 # 辅助函数
 # ============================================================
 
@@ -689,6 +826,12 @@ def main():
        
        # 使用新 recorder 回测
        run_backtest_only(recorder_id=new_recorder_id, experiment_name="workflow_new_period")
+       
+       # 分层图分析（基于 pred + label 的分组收益分析）
+       run_layer_analysis(
+           recorder_id="9bc75beec25c442c9830551cc401c094",
+           experiment_name="workflow_new_period",
+       )
     """
     import sys
     
@@ -702,13 +845,21 @@ def main():
             
         elif command == "backtest":
             # 仅回测
-            # run_backtest_only()
             run_backtest_only(
-                # recorder_id="91e8625c68a94bcaaff7b19b0695092f",
                 recorder_id="9bc75beec25c442c9830551cc401c094",
                 experiment_name="workflow_new_period",
                 start_time="2024-01-01",
                 end_time="2025-08-01",
+            )
+        
+        elif command == "layer":
+            # 分层图分析（基于指定 recorder 的 pred + label）
+            run_layer_analysis(
+                recorder_id="9bc75beec25c442c9830551cc401c094",
+                experiment_name="workflow_new_period",
+                output_dir=os.path.join(os.getcwd(), "layer_analysis"),
+                n_groups=5,
+                graph_names=["group_return", "pred_ic", "pred_autocorr"],
             )
         
         elif command == "backtest_new_period":
@@ -728,6 +879,7 @@ def main():
             print("使用方式:")
             print("  python workflow_by_code_v2.py train [gbdt|mlp|mlp_deep]")
             print("  python workflow_by_code_v2.py backtest")
+            print("  python workflow_by_code_v2.py layer   # 分层图分析")
     else:
         # 默认：训练 + 回测
         print("="*80)
@@ -736,6 +888,7 @@ def main():
         print("\n提示：")
         print("  - 仅训练: python workflow_by_code_v2.py train")
         print("  - 仅回测: python workflow_by_code_v2.py backtest")
+        print("  - 分层图分析: python workflow_by_code_v2.py layer")
         print("="*80)
         
         recorder_id = train_model(model_type="gbdt")
