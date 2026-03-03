@@ -708,7 +708,7 @@ def main():
                 recorder_id="9bc75beec25c442c9830551cc401c094",
                 experiment_name="workflow_new_period",
                 start_time="2024-01-01",
-                end_time="2025-12-24",
+                end_time="2025-08-01",
             )
         
         elif command == "backtest_new_period":
@@ -720,7 +720,7 @@ def main():
                 recorder_id=new_recorder_id,
                 experiment_name="workflow_new_period",
                 start_time="2024-01-01",
-                end_time="2025-12-24",
+                end_time="2025-08-01",
             )
             
         else:
