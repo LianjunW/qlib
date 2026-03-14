@@ -66,6 +66,24 @@ Run the Backtrader bridge with the new recorder:
   --plot-output backtest_log/union_pred_backtrader.html
 ```
 
+Run the native Qlib backtest on the same recorder:
+
+```bash
+.venv/bin/python - <<'PY'
+from examples.workflow_by_code_v2 import run_backtest_only
+
+run_backtest_only(
+    recorder_id="e8a9a60ffcfd4788976ab061547aba68",
+    experiment_name="workflow",
+    topk=20,
+    n_drop=2,
+    hold_thresh=1,
+    start_time="2024-01-01",
+    end_time="2025-08-01",
+)
+PY
+```
+
 Run the missing-signal fallback comparison:
 
 ```bash
@@ -111,6 +129,12 @@ Recorder `e8a9a60ffcfd4788976ab061547aba68`:
   - max drawdown `21.12%`
   - benchmark annual return `12.62%`
   - excess annual return `8.68%`
+- native Qlib backtest via `run_backtest_only()` on the same recorder:
+  - benchmark annual return `12.13%`
+  - excess annual return without cost `14.21%`
+  - excess annual return with cost `9.45%`
+  - max drawdown with cost `-15.75%`
+  - indicator summary: `ffr=1.0`, `pa=0.0`, `pos=0.0`
 
 Result: after expanding prediction coverage to the union of constituents,
 missing-signal fallback handling no longer changes the outcome.
