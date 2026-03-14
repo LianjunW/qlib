@@ -246,6 +246,10 @@ class QlibTopKStrategy(bt.Strategy):
 
         holdings = self._get_current_holdings()
         score_map = self._get_current_scores()
+        # "Missing signal" here means the current holding has no valid
+        # signal_score on today's bar. In practice this usually comes from
+        # gaps in pred.pkl coverage, for example when prediction generation only
+        # scored the point-in-time index constituents.
         for name in holdings:
             if name in score_map:
                 self.missing_signal_days.pop(name, None)
@@ -253,6 +257,9 @@ class QlibTopKStrategy(bt.Strategy):
                 self.missing_signal_days[name] = self.missing_signal_days.get(name, 0) + 1
 
         stale_holdings = []
+        # This switch is only a fallback for handling missing-score holdings.
+        # After expanding pred generation to the period union of constituents,
+        # it should have little or no impact on results.
         if self.p.sell_missing_signal:
             stale_holdings = [
                 name
@@ -285,6 +292,10 @@ class QlibTopKStrategy(bt.Strategy):
         allowed_sells = [
             name for name in sell_candidates if self.hold_days.get(name, 0) >= self.p.hold_thresh
         ]
+        # When sell_missing_signal is disabled, holdings without a current score
+        # are retained outside the ranking/dropout logic. This behavior is kept
+        # for compatibility, but it should no longer be a primary alpha source
+        # once pred coverage is made continuous upstream.
         retained = [name for name in holdings if name not in allowed_sells and name not in stale_holdings]
         buy_slots = max(self.p.topk - len(retained), 0)
         buy_names = [name for name in today if name not in retained][:buy_slots]

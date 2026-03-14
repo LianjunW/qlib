@@ -19,10 +19,12 @@ Qlib Workflow Example with Custom Strategy
 """
 import os
 from pprint import pprint
+from typing import List, Union
 
 import pandas as pd
 import qlib
 from qlib.constant import REG_CN
+from qlib.data import D
 from qlib.utils import init_instance_by_config, flatten_dict
 from qlib.workflow import R
 from qlib.workflow.record_temp import SignalRecord, PortAnaRecord, SigAnaRecord
@@ -118,6 +120,69 @@ BACKTEST_CONFIG = {
 # 数据集配置
 # ============================================================
 
+
+def ensure_qlib_initialized():
+    provider_uri = "~/.qlib/qlib_data/cn_data"
+    try:
+        D.calendar(start_time="2020-01-01", end_time="2020-01-02")
+    except Exception:
+        GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
+        qlib.init(provider_uri=provider_uri, region=REG_CN)
+
+
+def get_union_instruments_for_period(
+    market: str,
+    start_time: str,
+    end_time: str,
+) -> List[str]:
+    """
+    Return the union of index constituents during the given period.
+
+    This keeps prediction coverage continuous for stocks that leave the index
+    mid-period. Without this expansion, pred.pkl only contains scores for the
+    current constituents on each date, which can create artificial signal gaps
+    in downstream backtests.
+    """
+    ensure_qlib_initialized()
+    instruments = D.instruments(market)
+    union_instruments = D.list_instruments(
+        instruments,
+        start_time=start_time,
+        end_time=end_time,
+        as_list=True,
+        freq="day",
+    )
+    return sorted(union_instruments)
+
+
+def resolve_prediction_instruments(
+    instruments: Union[str, List[str]],
+    test_start_time: str,
+    test_end_time: str,
+    use_union_constituents: bool = True,
+) -> Union[str, List[str]]:
+    """
+    Expand a dynamic index universe into its period union for prediction.
+
+    The strategy/backtest can still choose how to trade, but pred generation is
+    made stable across constituent changes so that removed stocks do not lose
+    scores purely because the index membership rolled.
+    """
+    if not use_union_constituents or not isinstance(instruments, str):
+        return instruments
+
+    union_instruments = get_union_instruments_for_period(
+        market=instruments,
+        start_time=test_start_time,
+        end_time=test_end_time,
+    )
+    print(
+        f"使用 {instruments} 在 {test_start_time} ~ {test_end_time} 的成分股并集，"
+        f"共 {len(union_instruments)} 只股票生成预测。"
+    )
+    return union_instruments
+
+
 def get_extended_dataset_config(
     train_periods=None,
     valid=("2022-01-01", "2023-12-31"),
@@ -184,7 +249,7 @@ def get_extended_dataset_config(
 # 训练函数
 # ============================================================
 
-def train_model(model_type="gbdt", experiment_name="workflow"):
+def train_model(model_type="gbdt", experiment_name="workflow", use_union_constituents=True):
     """
     训练模型并保存预测结果
     
@@ -201,9 +266,7 @@ def train_model(model_type="gbdt", experiment_name="workflow"):
         recorder_id，用于后续回测
     """
     # 初始化 Qlib
-    provider_uri = "~/.qlib/qlib_data/cn_data"
-    GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
-    qlib.init(provider_uri=provider_uri, region=REG_CN)
+    ensure_qlib_initialized()
     
     # 选择模型
     if model_type == "gbdt":
@@ -219,7 +282,25 @@ def train_model(model_type="gbdt", experiment_name="workflow"):
         raise ValueError(f"未知的模型类型: {model_type}")
     
     # 数据集配置
-    extended_dataset_config = get_extended_dataset_config()
+    # By default, generate predictions on the union of constituents in the
+    # backtest period instead of the point-in-time index members. This avoids
+    # score discontinuities for stocks that leave the index during the test
+    # window while still preserving a bounded universe.
+    test_period = (
+        BACKTEST_CONFIG["start_time"],
+        BACKTEST_CONFIG["end_time"],
+    )
+    prediction_instruments = resolve_prediction_instruments(
+        instruments=CSI300_MARKET,
+        test_start_time=test_period[0],
+        test_end_time=test_period[1],
+        use_union_constituents=use_union_constituents,
+    )
+    extended_dataset_config = get_extended_dataset_config(
+        test=test_period,
+        instruments=prediction_instruments,
+        end_time=test_period[1],
+    )
     
     custom_task = {
         "model": model_config,
@@ -283,6 +364,7 @@ def generate_predictions_for_new_period(
     test_end_time=None,
     instruments=CSI300_MARKET,
     new_experiment_name=None,
+    use_union_constituents=True,
 ):
     """
     基于已训练的模型，为新时间段生成预测
@@ -313,13 +395,7 @@ def generate_predictions_for_new_period(
         新 recorder_id
     """
     # 初始化 Qlib
-    provider_uri = "~/.qlib/qlib_data/cn_data"
-    try:
-        from qlib.data import D
-        D.calendar(start_time="2020-01-01", end_time="2020-01-02")
-    except Exception:
-        GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
-        qlib.init(provider_uri=provider_uri, region=REG_CN)
+    ensure_qlib_initialized()
     
     # 获取 recorder
     exp = R.get_exp(experiment_name=experiment_name)
@@ -355,18 +431,28 @@ def generate_predictions_for_new_period(
     # 确定新的测试时间段
     _test_start = test_start_time if test_start_time is not None else BACKTEST_CONFIG["start_time"]
     _test_end = test_end_time if test_end_time is not None else BACKTEST_CONFIG["end_time"]
+    prediction_instruments = resolve_prediction_instruments(
+        instruments=instruments,
+        test_start_time=_test_start,
+        test_end_time=_test_end,
+        use_union_constituents=use_union_constituents,
+    )
     
     # 使用 get_extended_dataset_config 创建新数据集配置
-    # 保持训练时间段不变，只更新测试时间段和 end_time
+    # 保持训练时间段不变，只更新测试时间段和 end_time。默认将动态指数
+    # 股票池展开为区间成分股并集，以避免 pred 在成分股调整时出现断层。
     new_dataset_config = get_extended_dataset_config(
         test=(_test_start, _test_end),
-        instruments=instruments,
+        instruments=prediction_instruments,
         end_time=_test_end,  # 确保 end_time 覆盖测试时间段
     )
     
     print(f"\n新数据集配置:")
     print(f"  测试时间段: {_test_start} ~ {_test_end}")
-    print(f"  股票池: {instruments}")
+    if isinstance(prediction_instruments, list):
+        print(f"  股票池: {instruments} 成分股并集 ({len(prediction_instruments)} 只)")
+    else:
+        print(f"  股票池: {prediction_instruments}")
     
     # 创建新数据集
     dataset = init_instance_by_config(new_dataset_config)
