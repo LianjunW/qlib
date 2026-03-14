@@ -19,6 +19,7 @@ Qlib Workflow Example with Custom Strategy
 """
 import os
 from pprint import pprint
+from pathlib import Path
 from typing import List, Union
 
 import pandas as pd
@@ -100,18 +101,34 @@ STRATEGY_CONFIG = {
     "hold_thresh": 1,    # 最小持有天数
 }
 
+
+def get_latest_calendar_date(calendar_path: str = "~/.qlib/qlib_data/cn_data/calendars/day.txt") -> str:
+    calendar_file = Path(calendar_path).expanduser()
+    if not calendar_file.exists():
+        return "2025-08-01"
+
+    with calendar_file.open("r", encoding="utf-8") as f:
+        trading_days = [line.strip() for line in f if line.strip()]
+
+    return trading_days[-1] if trading_days else "2025-08-01"
+
+
+LATEST_BACKTEST_END = get_latest_calendar_date()
+# LATEST_BACKTEST_END = "2025-08-01"
+
+
 BACKTEST_CONFIG = {
     "start_time": "2024-01-01",
-    "end_time": "2025-08-01",
-    "account": 100000000,
+    "end_time": LATEST_BACKTEST_END,
+    "account": 1000000,
     "benchmark": CSI300_BENCH,
     "exchange_kwargs": {
         "freq": "day",
         "limit_threshold": 0.095,
         "deal_price": "close",
-        "open_cost": 0.0005,
-        "close_cost": 0.0015,
-        "min_cost": 5,
+        "open_cost": 0.0001,
+        "close_cost": 0.0001,
+        "min_cost": 1,
     },
 }
 

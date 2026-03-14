@@ -10,6 +10,7 @@ the recorder artifact `pred.pkl` as the signal source for a backtrader run.
 import argparse
 import math
 import os
+from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
@@ -32,14 +33,25 @@ except ImportError as exc:  # pragma: no cover - handled at runtime
 try:
     from workflow_by_code_v2 import BACKTEST_CONFIG
 except ImportError:
+    def get_latest_calendar_date(calendar_path: str = "~/.qlib/qlib_data/cn_data/calendars/day.txt") -> str:
+        calendar_file = Path(calendar_path).expanduser()
+        if not calendar_file.exists():
+            return "2025-08-01"
+
+        with calendar_file.open("r", encoding="utf-8") as f:
+            trading_days = [line.strip() for line in f if line.strip()]
+
+        return trading_days[-1] if trading_days else "2025-08-01"
+
     BACKTEST_CONFIG = {
         "start_time": "2024-01-01",
-        "end_time": "2025-08-01",
-        "account": 100000000,
+        "end_time": get_latest_calendar_date(),
+        # "end_time": "2024-08-01",
+        "account": 1000000,
         "exchange_kwargs": {
-            "open_cost": 0.0005,
-            "close_cost": 0.0015,
-            "min_cost": 5,
+            "open_cost": 0.0001,
+            "close_cost": 0.0001,
+            "min_cost": 1,
         },
     }
 
@@ -178,6 +190,7 @@ class QlibTopKStrategy(bt.Strategy):
         ("n_drop", 2),
         ("hold_thresh", 1),
         ("risk_degree", 0.95),
+        ("lot_size", 100),
         ("sell_missing_signal", False),
         ("missing_signal_sell_after", 3),
         ("verbose", False),
@@ -237,6 +250,50 @@ class QlibTopKStrategy(bt.Strategy):
                 self.hold_days.pop(data._name, None)
                 self.missing_signal_days.pop(data._name, None)
         return holdings
+
+    def _estimate_trade_cash(self, data, size_delta: int, price: float) -> float:
+        comminfo = self.broker.getcommissioninfo(data)
+        commission = comminfo.getcommission(size=size_delta, price=price)
+        return abs(size_delta) * price + commission
+
+    def _order_target_percent_lot(self, data, target: float):
+        position = self.getposition(data)
+        current_size = int(position.size)
+        price = float(data.close[0])
+        if not math.isfinite(price) or price <= 0:
+            return
+
+        if target <= 0:
+            if current_size > 0:
+                self.order_target_size(data=data, target=0)
+            return
+
+        lot_size = max(int(self.p.lot_size), 1)
+        portfolio_value = float(self.broker.getvalue())
+        target_value = max(portfolio_value * target, 0.0)
+        desired_size = int(target_value // (price * lot_size)) * lot_size
+
+        if desired_size <= 0:
+            if current_size > 0:
+                self.order_target_size(data=data, target=0)
+            return
+
+        if desired_size <= current_size:
+            self.order_target_size(data=data, target=desired_size)
+            return
+
+        size_delta = desired_size - current_size
+        affordable_delta = size_delta
+        cash = float(self.broker.getcash())
+        while affordable_delta > 0:
+            estimated_cash = self._estimate_trade_cash(data, affordable_delta, price)
+            if estimated_cash <= cash:
+                break
+            affordable_delta -= lot_size
+
+        target_size = current_size + max(affordable_delta, 0)
+        if target_size != current_size:
+            self.order_target_size(data=data, target=target_size)
 
     def next(self):
         current_date = self.datetime.date(0)
@@ -319,7 +376,7 @@ class QlibTopKStrategy(bt.Strategy):
         for name, target in sorted(target_map.items(), key=lambda item: item[1]):
             data = self.data_by_name.get(name)
             if data is not None:
-                self.order_target_percent(data=data, target=target)
+                self._order_target_percent_lot(data=data, target=target)
 
 
 def init_qlib():
