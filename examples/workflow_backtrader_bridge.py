@@ -31,29 +31,45 @@ except ImportError as exc:  # pragma: no cover - handled at runtime
     ) from exc
 
 try:
-    from workflow_by_code_v2 import BACKTEST_CONFIG
+    from workflow_by_code_v2 import (
+        BACKTEST_CONFIG,
+        STRATEGY_CONFIG,
+        ensure_qlib_initialized,
+    )
+    _V2_AVAILABLE = True
 except ImportError:
-    def get_latest_calendar_date(calendar_path: str = "~/.qlib/qlib_data/cn_data/calendars/day.txt") -> str:
+    _V2_AVAILABLE = False
+
+    def _get_latest_calendar_date(
+        calendar_path: str = "~/.qlib/qlib_data/cn_data/calendars/day.txt",
+    ) -> str:
         calendar_file = Path(calendar_path).expanduser()
         if not calendar_file.exists():
             return "2025-08-01"
-
         with calendar_file.open("r", encoding="utf-8") as f:
             trading_days = [line.strip() for line in f if line.strip()]
-
         return trading_days[-1] if trading_days else "2025-08-01"
 
     BACKTEST_CONFIG = {
         "start_time": "2024-01-01",
-        "end_time": get_latest_calendar_date(),
-        # "end_time": "2024-08-01",
-        "account": 1000000,
+        "end_time": _get_latest_calendar_date(),
+        "account": 1_000_000,
+        "benchmark": "SH000300",
         "exchange_kwargs": {
             "open_cost": 0.0001,
             "close_cost": 0.0001,
             "min_cost": 1,
         },
     }
+    STRATEGY_CONFIG = {"topk": 20, "n_drop": 2, "hold_thresh": 1}
+
+    def ensure_qlib_initialized():
+        provider_uri = os.path.expanduser("~/.qlib/qlib_data/cn_data")
+        try:
+            D.calendar(start_time="2020-01-01", end_time="2020-01-02")
+        except Exception:
+            GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
+            qlib.init(provider_uri=provider_uri, region=REG_CN)
 
 
 PRICE_FIELDS = ["$open", "$high", "$low", "$close", "$volume"]
@@ -380,12 +396,7 @@ class QlibTopKStrategy(bt.Strategy):
 
 
 def init_qlib():
-    provider_uri = os.path.expanduser("~/.qlib/qlib_data/cn_data")
-    try:
-        D.calendar(start_time="2020-01-01", end_time="2020-01-02")
-    except Exception:
-        GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
-        qlib.init(provider_uri=provider_uri, region=REG_CN)
+    ensure_qlib_initialized()
 
 
 def _iter_recorders(exp) -> Iterable[Tuple[str, object]]:
@@ -660,9 +671,9 @@ def parse_args():
     parser.add_argument("--recorder-id", default=None)
     parser.add_argument("--start-time", default=BACKTEST_CONFIG.get("start_time"))
     parser.add_argument("--end-time", default=BACKTEST_CONFIG.get("end_time"))
-    parser.add_argument("--topk", type=int, default=20)
-    parser.add_argument("--n-drop", type=int, default=2)
-    parser.add_argument("--hold-thresh", type=int, default=1)
+    parser.add_argument("--topk", type=int, default=STRATEGY_CONFIG["topk"])
+    parser.add_argument("--n-drop", type=int, default=STRATEGY_CONFIG["n_drop"])
+    parser.add_argument("--hold-thresh", type=int, default=STRATEGY_CONFIG["hold_thresh"])
     parser.add_argument("--account", type=float, default=BACKTEST_CONFIG.get("account", 100000000))
     parser.add_argument("--max-instruments", type=int, default=None)
     parser.add_argument(
