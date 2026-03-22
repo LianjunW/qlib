@@ -1,0 +1,11 @@
+loguru
+fire
+numpy
+pandas
+tqdm
+joblib
+requests
+beautifulsoup4
+bs4
+soupsieve
+baostock
