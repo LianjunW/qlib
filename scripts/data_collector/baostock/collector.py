@@ -5,8 +5,9 @@ import sys
 import copy
 import datetime
 import multiprocessing
+import shutil
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, List
 
 import fire
 import baostock as bs
@@ -26,6 +27,43 @@ sys.path.append(str(CUR_DIR.parent.parent))
 from dump_bin import DumpDataUpdate
 from data_collector.base import BaseCollector, BaseNormalize, BaseRun, Normalize
 from data_collector.utils import get_calendar_list, get_hs_stock_symbols, get_instruments, symbol_suffix_to_prefix
+
+# Earliest CSI300 coverage for qlib instrument segment (flat membership file only).
+CSI300_INSTRUMENT_START = "2005-04-08"
+
+
+def baostock_hs_code_to_qlib(bs_code: str) -> str:
+    """baostock ``sh.600519`` / ``sz.000001`` -> qlib ``SH600519`` / ``SZ000001``."""
+    s = str(bs_code).strip().lower()
+    if "." not in s:
+        return ""
+    ex, num = s.split(".", 1)
+    num = num.strip()
+    if not num.isdigit():
+        return ""
+    if ex == "sh":
+        return "SH" + num.zfill(6)
+    if ex == "sz":
+        return "SZ" + num.zfill(6)
+    if ex == "bj":
+        return "BJ" + num.upper()
+    return ""
+
+
+def query_hs300_symbols_baostock(trade_date: str) -> List[str]:
+    """Return sorted unique qlib symbols for CSI300 (沪深300) on *trade_date* (YYYY-MM-DD)."""
+    rs = bs.query_hs300_stocks(date=trade_date)
+    if rs.error_code != "0":
+        logger.warning(f"query_hs300_stocks({trade_date}): {rs.error_msg}")
+        return []
+    out: List[str] = []
+    while rs.error_code == "0" and rs.next():
+        row = rs.get_row_data()
+        if len(row) > 1:
+            q = baostock_hs_code_to_qlib(row[1])
+            if q:
+                out.append(q)
+    return sorted(set(out))
 
 
 class BaostockCollectorCN1d(BaseCollector):
@@ -49,6 +87,7 @@ class BaostockCollectorCN1d(BaseCollector):
         instrument_scope: str = "all",
         include_index_symbols: bool = None,
         source_skip_existing: bool = False,
+        normalize_dir: [str, Path] = None,
     ):
         """
         Parameters
@@ -57,6 +96,9 @@ class BaostockCollectorCN1d(BaseCollector):
             stock save dir
         adjustflag: str
             baostock adjust flag. "2" means qfq, "1" means hfq, "3" means no adjustment.
+        normalize_dir: str or Path, optional
+            If set and ``source_skip_existing`` is True, also skip remote fetch when the matching
+            normalized csv under this directory already covers the requested range (same rule as source).
         """
         if interval != self.INTERVAL_1d:
             raise ValueError(f"Baostock daily collector only supports interval={self.INTERVAL_1d}")
@@ -64,6 +106,9 @@ class BaostockCollectorCN1d(BaseCollector):
         self.adjustflag = str(adjustflag)
         self.qlib_data_1d_dir = (
             str(Path(qlib_data_1d_dir).expanduser().resolve()) if qlib_data_1d_dir is not None else None
+        )
+        self.normalize_dir = (
+            Path(normalize_dir).expanduser().resolve() if normalize_dir is not None else None
         )
         self.instrument_scope = (instrument_scope or "all").strip().lower()
         if include_index_symbols is None:
@@ -227,33 +272,48 @@ class BaostockCollectorCN1d(BaseCollector):
 
         return raw_df
 
-    def _local_csv_covers_request(self, symbol: str) -> bool:
-        """True if existing source csv already has daily rows through the last calendar day before end_datetime."""
-        if not self.source_skip_existing:
-            return False
-        fname = code_to_fname(self.normalize_symbol(symbol))
-        instrument_path = self.save_dir.joinpath(f"{fname}.csv")
-        if not instrument_path.exists():
+    @staticmethod
+    def _csv_file_covers_through(csv_path: Path, need_until: pd.Timestamp) -> bool:
+        """True if csv ``date`` column max (normalized) >= need_until."""
+        if not csv_path.exists():
             return False
         try:
-            old = pd.read_csv(instrument_path, usecols=["date"], low_memory=False)
+            old = pd.read_csv(csv_path, usecols=["date"], low_memory=False)
             if old.empty:
                 return False
             max_d = pd.to_datetime(old["date"], errors="coerce").max()
             if pd.isna(max_d):
                 return False
-            # BaseCollector end is exclusive (open interval); last needed bar is end - 1 calendar day
-            need_until = (pd.Timestamp(self.end_datetime).normalize() - pd.Timedelta(days=1)).normalize()
-            if max_d.normalize() >= need_until:
-                return True
-        except Exception as e:
-            logger.warning(f"{symbol} source_skip_existing check failed: {e}")
-        return False
+            return max_d.normalize() >= need_until.normalize()
+        except Exception:
+            return False
+
+    def _local_csv_covers_request(self, symbol: str) -> tuple:
+        """
+        Returns
+        -------
+        (skip_remote: bool, reason: str)
+            If skip_remote, existing local data already has rows through the last calendar day before end_datetime.
+        """
+        if not self.source_skip_existing:
+            return False, ""
+        fname = f"{code_to_fname(self.normalize_symbol(symbol))}.csv"
+        # BaseCollector end is exclusive (open interval); last needed bar is end - 1 calendar day
+        need_until = (pd.Timestamp(self.end_datetime).normalize() - pd.Timedelta(days=1)).normalize()
+        src = self.save_dir.joinpath(fname)
+        if self._csv_file_covers_through(src, need_until):
+            return True, "source"
+        if self.normalize_dir is not None:
+            norm = self.normalize_dir.joinpath(fname)
+            if self._csv_file_covers_through(norm, need_until):
+                return True, "normalize"
+        return False, ""
 
     def _simple_collector(self, symbol: str):
         self.sleep()
-        if self._local_csv_covers_request(symbol):
-            logger.info(f"skip download (source exists): {symbol}")
+        skip, why = self._local_csv_covers_request(symbol)
+        if skip:
+            logger.info(f"skip download ({why} up to date): {symbol}")
             return self.NORMAL_FLAG
         df = self.get_data(symbol, self.interval, self.start_datetime, self.end_datetime)
         _result = self.NORMAL_FLAG
@@ -464,6 +524,7 @@ class Run(BaseRun):
         instrument_scope: str = None,
         include_index_symbols: bool = None,
         source_skip_existing: bool = False,
+        normalize_dir: str = None,
     ):
         if self.interval.lower() != "1d":
             raise ValueError("baostock daily updater only supports interval=1d")
@@ -474,6 +535,7 @@ class Run(BaseRun):
         if pd.Timestamp(start) >= pd.Timestamp(end):
             raise ValueError(f"start date {start} must be earlier than end date {end}")
         scope = instrument_scope if instrument_scope is not None else self.instrument_scope
+        ndir = normalize_dir if normalize_dir is not None else str(self.normalize_dir)
         super(Run, self).download_data(
             max_collector_count,
             delay,
@@ -486,6 +548,7 @@ class Run(BaseRun):
             instrument_scope=scope,
             include_index_symbols=include_index_symbols,
             source_skip_existing=source_skip_existing,
+            normalize_dir=ndir,
         )
 
     def normalize_data(
@@ -504,11 +567,16 @@ class Run(BaseRun):
         date_field_name: str = "date",
         symbol_field_name: str = "symbol",
         qlib_instrument_market: str = None,
+        normalize_skip_existing: bool = True,
+        request_end_exclusive: str = None,
     ):
         if self.interval.lower() != "1d":
             raise ValueError("baostock daily updater only supports interval=1d")
         norm_class = getattr(self._cur_module, f"{self.normalize_class_name}Extend")
         market = qlib_instrument_market if qlib_instrument_market is not None else self.instrument_scope
+        skip_kw = {}
+        if normalize_skip_existing and request_end_exclusive is not None:
+            skip_kw["skip_target_if_covers_until"] = pd.Timestamp(request_end_exclusive)
         norm = Normalize(
             source_dir=self.source_dir,
             target_dir=self.normalize_dir,
@@ -518,6 +586,7 @@ class Run(BaseRun):
             symbol_field_name=symbol_field_name,
             old_qlib_data_dir=old_qlib_data_dir,
             qlib_instrument_market=market,
+            **skip_kw,
         )
         norm.normalize()
 
@@ -531,7 +600,9 @@ class Run(BaseRun):
         instrument_scope: str = None,
         include_index_symbols: bool = None,
         source_skip_existing: bool = True,
+        normalize_skip_existing: bool = True,
         update_index_instruments: bool = False,
+        refresh_csi300_instruments_baostock: bool = False,
     ):
         """
         Incrementally update CN daily qlib data using baostock.
@@ -542,9 +613,16 @@ class Run(BaseRun):
             Which qlib `instruments/<name>.txt` to use for the symbol list, e.g. `csi300`.
             Default uses `Run` init value (default `all`).
         source_skip_existing:
-            If True, skip baostock download when local source csv already covers dates through end-1 day.
+            If True, skip baostock download when local **source** or **normalize** csv (same basename)
+            already has rows through end-1 calendar day (open ``end_date`` interval), to avoid slow remote calls.
+        normalize_skip_existing:
+            If True, skip rewriting a normalize output csv when it already covers through end-1 day
+            (avoids reprocessing when download was skipped and stale source would overwrite fresh normalize).
         update_index_instruments:
             If True, refresh CSI index membership via cn_index (needs network). Default False to avoid flaky APIs.
+        refresh_csi300_instruments_baostock:
+            If True and scope is ``csi300``, rewrite ``instruments/csi300.txt`` from baostock ``query_hs300_stocks``
+            (no Eastmoney / csindex). See ``update_csi300_instruments_from_baostock``.
         """
         if self.interval.lower() != "1d":
             raise ValueError("currently only supports 1d data updates: --interval 1d")
@@ -576,6 +654,7 @@ class Run(BaseRun):
             instrument_scope=scope,
             include_index_symbols=include_index_symbols,
             source_skip_existing=source_skip_existing,
+            normalize_dir=str(self.normalize_dir),
         )
 
         self.max_workers = (
@@ -583,7 +662,12 @@ class Run(BaseRun):
             if self.max_workers is None or self.max_workers <= 1
             else self.max_workers
         )
-        self.normalize_data_1d_extend(qlib_data_1d_dir, qlib_instrument_market=scope)
+        self.normalize_data_1d_extend(
+            qlib_data_1d_dir,
+            qlib_instrument_market=scope,
+            normalize_skip_existing=normalize_skip_existing,
+            request_end_exclusive=end_date,
+        )
 
         dump = DumpDataUpdate(
             csv_path=self.normalize_dir,
@@ -592,6 +676,9 @@ class Run(BaseRun):
             max_workers=self.max_workers,
         )
         dump.dump()
+
+        if refresh_csi300_instruments_baostock and scope == "csi300":
+            self.update_csi300_instruments_from_baostock(qlib_data_1d_dir=qlib_data_1d_dir)
 
         if update_index_instruments:
             if scope == "csi300":
@@ -607,6 +694,70 @@ class Run(BaseRun):
                     get_instruments(qlib_data_1d_dir, index_name, market_index="cn_index")
                 except Exception as e:
                     logger.warning(f"skip index refresh {index_name}: {e}")
+
+    def update_csi300_instruments_from_baostock(
+        self,
+        qlib_data_1d_dir: str,
+        as_of_date: str = None,
+        lookback_calendar_days: int = 30,
+    ):
+        """
+        Rewrite ``instruments/csi300.txt`` using baostock ``query_hs300_stocks`` only.
+
+        Notes
+        -----
+        - Does **not** use cn_index / Eastmoney / csindex (avoids RemoteDisconnected there).
+        - Writes a **single membership segment** per symbol: ``start`` = CSI300_INSTRUMENT_START,
+          ``end`` = *as_of_date* (or last line of ``calendars/day.txt``). This is enough for
+          ``D.list_instruments`` on recent dates but **not** a full historical constituent history.
+
+        Examples
+        --------
+        $ python collector.py update_csi300_instruments_from_baostock --qlib_data_1d_dir ~/.qlib/qlib_data/cn_data
+        $ python collector.py update_csi300_instruments_from_baostock --qlib_data_1d_dir ~/.qlib/qlib_data/cn_data --as_of_date 2026-03-20
+        """
+        qlib_data_1d_dir = str(Path(qlib_data_1d_dir).expanduser().resolve())
+        inst_dir = Path(qlib_data_1d_dir).joinpath("instruments")
+        inst_dir.mkdir(parents=True, exist_ok=True)
+        target = inst_dir.joinpath("csi300.txt")
+
+        cal_path = Path(qlib_data_1d_dir).joinpath("calendars", "day.txt")
+        if not cal_path.exists():
+            raise FileNotFoundError(f"Missing calendar: {cal_path}")
+        cal_lines = [x.strip() for x in cal_path.read_text(encoding="utf-8").splitlines() if x.strip()]
+        if not cal_lines:
+            raise ValueError("calendars/day.txt is empty")
+
+        if as_of_date is None:
+            as_of_date = cal_lines[-1]
+
+        bs.login()
+        try:
+            symbols = query_hs300_symbols_baostock(as_of_date)
+            if not symbols:
+                for d in reversed(cal_lines[-int(lookback_calendar_days) :]):
+                    symbols = query_hs300_symbols_baostock(d)
+                    if symbols:
+                        logger.warning(f"HS300 list empty on {as_of_date}; using baostock date {d}")
+                        as_of_date = d
+                        break
+        finally:
+            bs.logout()
+
+        if not symbols:
+            raise ValueError(
+                f"No HS300 constituents from baostock for {as_of_date} (tried last {lookback_calendar_days} calendar days)."
+            )
+
+        if target.exists():
+            bak = inst_dir.joinpath("csi300.txt.bak")
+            shutil.copy2(target, bak)
+            logger.info(f"Backed up previous csi300.txt to {bak}")
+
+        end = pd.Timestamp(as_of_date).strftime("%Y-%m-%d")
+        body = "".join(f"{sym}\t{CSI300_INSTRUMENT_START}\t{end}\n" for sym in symbols)
+        target.write_text(body, encoding="utf-8")
+        logger.info(f"Wrote {len(symbols)} CSI300 lines to {target} (segment {CSI300_INSTRUMENT_START} ~ {end})")
 
 
 if __name__ == "__main__":

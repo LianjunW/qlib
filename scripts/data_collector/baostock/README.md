@@ -58,8 +58,29 @@ python scripts/data_collector/baostock/collector.py --instrument_scope csi300 up
 
 Optional flags:
 
-- `--source_skip_existing False` — force re-download even if local source csv looks complete
+- `--source_skip_existing False` — force re-download even if local **source** or **normalize** csv (same `sh600519.csv` basename) already has daily rows through `end_date - 1` (collector `end_date` is open-interval)
+- `--normalize_skip_existing False` — always re-run normalize from source (default skips per symbol when the normalize output is already fresh, so a skipped download cannot overwrite good normalize files with stale source)
 - `--update_index_instruments True` — refresh `CSI300` membership via `cn_index` (needs network; may fail behind firewalls)
+- `--refresh_csi300_instruments_baostock True` — after dump, rewrite `instruments/csi300.txt` from **baostock** `query_hs300_stocks` (use when `cn_index` / Eastmoney fails with `RemoteDisconnected`)
+
+### Refresh CSI300 constituents without `cn_index`
+
+If `cn_index` / `parse_instruments` fails (e.g. Eastmoney closes the connection), regenerate `instruments/csi300.txt` from baostock only:
+
+```bash
+python scripts/data_collector/baostock/collector.py update_csi300_instruments_from_baostock \
+  --qlib_data_1d_dir ~/.qlib/qlib_data/cn_data
+```
+
+Optional `--as_of_date YYYY-MM-DD` (default: last date in `calendars/day.txt`). The file is written as one segment per symbol (`2005-04-08` ~ *as_of_date*), which is enough for recent `list_instruments` but **not** full historical index rebalancing.
+
+One-shot update + constituent refresh:
+
+```bash
+python scripts/data_collector/baostock/collector.py update_data_to_bin \
+  --qlib_data_1d_dir ~/.qlib/qlib_data/cn_data --region CN --interval 1d \
+  --instrument_scope csi300 --refresh_csi300_instruments_baostock True
+```
 
 Specify an update end date with open interval semantics:
 
