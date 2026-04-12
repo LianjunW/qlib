@@ -15,7 +15,7 @@ Subcommands (CLI)::
     python workflow_by_code_v2.py train [gbdt|mlp|mlp_deep]
     python workflow_by_code_v2.py backtest  --topk 30 --n-drop 3
     python workflow_by_code_v2.py bridge    --plot-output nav.html
-    python workflow_by_code_v2.py predict   --start 2025-01-01 --end 2025-12-31
+    python workflow_by_code_v2.py predict   --start 2024-01-01 --end 2026-04-10
     python workflow_by_code_v2.py layer     --n-groups 5
     python workflow_by_code_v2.py analyze   --top-n 10
     python workflow_by_code_v2.py list      --experiment workflow
@@ -251,9 +251,9 @@ def _list_recorders(experiment_name: str) -> None:
 def get_extended_dataset_config(
     train_periods: Optional[List[tuple]] = None,
     valid: tuple = ("2022-01-01", "2023-12-31"),
-    test: tuple = ("2024-01-01", "2025-08-01"),
+    test: Optional[tuple] = None,
     instruments=CSI300_MARKET,
-    end_time: str = "2025-08-01",
+    end_time: Optional[str] = None,
 ) -> dict:
     """Build an Alpha158 DatasetH config with multi-segment training support."""
     if train_periods is None:
@@ -262,6 +262,10 @@ def get_extended_dataset_config(
             ("2016-01-01", "2019-12-31"),
             ("2020-06-01", "2021-12-31"),
         ]
+    if test is None:
+        test = (BACKTEST_CONFIG["start_time"], BACKTEST_CONFIG["end_time"])
+    if end_time is None:
+        end_time = test[1]
 
     train_start = min(p[0] for p in train_periods)
     train_end = max(p[1] for p in train_periods)
@@ -773,7 +777,7 @@ def _build_parser() -> argparse.ArgumentParser:
               python workflow_by_code_v2.py train gbdt
               python workflow_by_code_v2.py backtest --topk 30 --n-drop 3
               python workflow_by_code_v2.py bridge --plot-output nav.html
-              python workflow_by_code_v2.py predict --start 2025-01-01 --end 2025-12-31
+              python workflow_by_code_v2.py predict --start 2024-01-01 --end 2026-04-10
               python workflow_by_code_v2.py layer --experiment workflow
               python workflow_by_code_v2.py analyze --top-n 10
               python workflow_by_code_v2.py list --experiment workflow
