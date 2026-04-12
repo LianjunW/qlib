@@ -1,0 +1,328 @@
+{
+  "date": "2024-04-03",
+  "requested_date": "2024-04-07",
+  "generated_at": "2026-04-12T11:28:21.523879",
+  "experiment_name": "workflow",
+  "recorder_id": "a82904595add4caeaadea5e2e10903c7",
+  "market_signal": "MILDLY_BULLISH",
+  "market_signal_description": "Moderate positive scores, some differentiation among stocks",
+  "score_stats": {
+    "mean": -0.006177441998731528,
+    "median": -0.006742210481807732,
+    "top_k_mean": 0.04381863648873499,
+    "bottom_k_mean": -0.042710277053383164,
+    "spread": 0.08652891354211815
+  },
+  "top_scores": [
+    {
+      "rank": 1,
+      "instrument": "SZ002938",
+      "name": "鹏鼎控股",
+      "score": 0.06990590148841228,
+      "close": 21.860000610351562
+    },
+    {
+      "rank": 2,
+      "instrument": "SH688111",
+      "name": "金山办公",
+      "score": 0.06019835321140882,
+      "close": 285.0
+    },
+    {
+      "rank": 3,
+      "instrument": "SZ300347",
+      "name": "泰格医药",
+      "score": 0.05804443557968825,
+      "close": 50.23999786376953
+    },
+    {
+      "rank": 4,
+      "instrument": "SH603019",
+      "name": "中科曙光",
+      "score": 0.053234010018548064,
+      "close": 46.04999923706055
+    },
+    {
+      "rank": 5,
+      "instrument": "SH688256",
+      "name": "寒武纪",
+      "score": 0.051201226436175376,
+      "close": 162.10000610351562
+    },
+    {
+      "rank": 6,
+      "instrument": "SH603259",
+      "name": "药明康德",
+      "score": 0.050443094725630085,
+      "close": 47.30999755859375
+    },
+    {
+      "rank": 7,
+      "instrument": "SH601138",
+      "name": "工业富联",
+      "score": 0.04912198555645577,
+      "close": 21.920000076293945
+    },
+    {
+      "rank": 8,
+      "instrument": "SH600522",
+      "name": "中天科技",
+      "score": 0.04857340865225699,
+      "close": 13.320000648498535
+    },
+    {
+      "rank": 9,
+      "instrument": "SH600160",
+      "name": "巨化股份",
+      "score": 0.043931800637243175,
+      "close": 22.30000114440918
+    },
+    {
+      "rank": 10,
+      "instrument": "SZ300308",
+      "name": "中际旭创",
+      "score": 0.04001173199242722,
+      "close": 156.09999084472656
+    },
+    {
+      "rank": 11,
+      "instrument": "SZ300661",
+      "name": "圣邦股份",
+      "score": 0.039811850382428016,
+      "close": 62.900001525878906
+    },
+    {
+      "rank": 12,
+      "instrument": "SZ000977",
+      "name": "浪潮信息",
+      "score": 0.03898158662904985,
+      "close": 39.35000228881836
+    },
+    {
+      "rank": 13,
+      "instrument": "SH603392",
+      "name": "万泰生物",
+      "score": 0.03844016879190298,
+      "close": 64.27999877929688
+    },
+    {
+      "rank": 14,
+      "instrument": "SZ002463",
+      "name": "沪电股份",
+      "score": 0.038038155149028356,
+      "close": 29.619998931884766
+    },
+    {
+      "rank": 15,
+      "instrument": "SH688047",
+      "name": "龙芯中科",
+      "score": 0.03544039880513531,
+      "close": 87.01000213623047
+    },
+    {
+      "rank": 16,
+      "instrument": "SH601136",
+      "name": "首创证券",
+      "score": 0.03445540984358468,
+      "close": 18.520000457763672
+    },
+    {
+      "rank": 17,
+      "instrument": "SH601689",
+      "name": "拓普集团",
+      "score": 0.03330358021113509,
+      "close": 58.70000076293945
+    },
+    {
+      "rank": 18,
+      "instrument": "SZ300502",
+      "name": "新易盛",
+      "score": 0.03327653006549994,
+      "close": 67.7699966430664
+    },
+    {
+      "rank": 19,
+      "instrument": "SH688187",
+      "name": "时代电气",
+      "score": 0.031265560493158484,
+      "close": 47.41999816894531
+    },
+    {
+      "rank": 20,
+      "instrument": "SH600406",
+      "name": "国电南瑞",
+      "score": 0.028693541105531066,
+      "close": 23.619998931884766
+    }
+  ],
+  "strategy": {
+    "buys": [
+      {
+        "instrument": "SZ002938",
+        "name": "鹏鼎控股"
+      },
+      {
+        "instrument": "SH688111",
+        "name": "金山办公"
+      },
+      {
+        "instrument": "SZ300347",
+        "name": "泰格医药"
+      },
+      {
+        "instrument": "SH603019",
+        "name": "中科曙光"
+      },
+      {
+        "instrument": "SH688256",
+        "name": "寒武纪"
+      },
+      {
+        "instrument": "SH603259",
+        "name": "药明康德"
+      },
+      {
+        "instrument": "SH601138",
+        "name": "工业富联"
+      },
+      {
+        "instrument": "SH600522",
+        "name": "中天科技"
+      },
+      {
+        "instrument": "SH600160",
+        "name": "巨化股份"
+      },
+      {
+        "instrument": "SZ300308",
+        "name": "中际旭创"
+      },
+      {
+        "instrument": "SZ300661",
+        "name": "圣邦股份"
+      },
+      {
+        "instrument": "SZ000977",
+        "name": "浪潮信息"
+      },
+      {
+        "instrument": "SH603392",
+        "name": "万泰生物"
+      },
+      {
+        "instrument": "SZ002463",
+        "name": "沪电股份"
+      },
+      {
+        "instrument": "SH688047",
+        "name": "龙芯中科"
+      },
+      {
+        "instrument": "SH601136",
+        "name": "首创证券"
+      },
+      {
+        "instrument": "SH601689",
+        "name": "拓普集团"
+      },
+      {
+        "instrument": "SZ300502",
+        "name": "新易盛"
+      },
+      {
+        "instrument": "SH688187",
+        "name": "时代电气"
+      },
+      {
+        "instrument": "SH600406",
+        "name": "国电南瑞"
+      }
+    ],
+    "sells": [],
+    "holds": [],
+    "target_portfolio": [
+      {
+        "instrument": "SZ002938",
+        "name": "鹏鼎控股"
+      },
+      {
+        "instrument": "SH688111",
+        "name": "金山办公"
+      },
+      {
+        "instrument": "SZ300347",
+        "name": "泰格医药"
+      },
+      {
+        "instrument": "SH603019",
+        "name": "中科曙光"
+      },
+      {
+        "instrument": "SH688256",
+        "name": "寒武纪"
+      },
+      {
+        "instrument": "SH603259",
+        "name": "药明康德"
+      },
+      {
+        "instrument": "SH601138",
+        "name": "工业富联"
+      },
+      {
+        "instrument": "SH600522",
+        "name": "中天科技"
+      },
+      {
+        "instrument": "SH600160",
+        "name": "巨化股份"
+      },
+      {
+        "instrument": "SZ300308",
+        "name": "中际旭创"
+      },
+      {
+        "instrument": "SZ300661",
+        "name": "圣邦股份"
+      },
+      {
+        "instrument": "SZ000977",
+        "name": "浪潮信息"
+      },
+      {
+        "instrument": "SH603392",
+        "name": "万泰生物"
+      },
+      {
+        "instrument": "SZ002463",
+        "name": "沪电股份"
+      },
+      {
+        "instrument": "SH688047",
+        "name": "龙芯中科"
+      },
+      {
+        "instrument": "SH601136",
+        "name": "首创证券"
+      },
+      {
+        "instrument": "SH601689",
+        "name": "拓普集团"
+      },
+      {
+        "instrument": "SZ300502",
+        "name": "新易盛"
+      },
+      {
+        "instrument": "SH688187",
+        "name": "时代电气"
+      },
+      {
+        "instrument": "SH600406",
+        "name": "国电南瑞"
+      }
+    ]
+  },
+  "total_instruments_scored": 297,
+  "stock_name_map_path": "/root/projects/qlib/examples/local_stock_names.json"
+}

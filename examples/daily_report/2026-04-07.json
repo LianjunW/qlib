@@ -1,0 +1,328 @@
+{
+  "date": "2026-04-07",
+  "requested_date": "2026-04-07",
+  "generated_at": "2026-04-12T11:53:45.145907",
+  "experiment_name": "workflow",
+  "recorder_id": "a82904595add4caeaadea5e2e10903c7",
+  "market_signal": "BULLISH",
+  "market_signal_description": "Strong positive score spread, multiple high-conviction opportunities",
+  "score_stats": {
+    "mean": -0.005465662146801775,
+    "median": -0.009145205668666619,
+    "top_k_mean": 0.05103310539984511,
+    "bottom_k_mean": -0.04038596079964539,
+    "spread": 0.0914190661994905
+  },
+  "top_scores": [
+    {
+      "rank": 1,
+      "instrument": "SZ000002",
+      "name": "万科A",
+      "score": 0.08211075083397631,
+      "close": 3.81
+    },
+    {
+      "rank": 2,
+      "instrument": "SH601336",
+      "name": "新华保险",
+      "score": 0.08063808280547685,
+      "close": 59.32
+    },
+    {
+      "rank": 3,
+      "instrument": "SZ002459",
+      "name": "晶澳科技",
+      "score": 0.07100713453479648,
+      "close": 10.27
+    },
+    {
+      "rank": 4,
+      "instrument": "SH601319",
+      "name": "中国人保",
+      "score": 0.06601292720967147,
+      "close": 7.24
+    },
+    {
+      "rank": 5,
+      "instrument": "SZ300760",
+      "name": "迈瑞医疗",
+      "score": 0.05915251072361126,
+      "close": 157.76
+    },
+    {
+      "rank": 6,
+      "instrument": "SH600438",
+      "name": "通威股份",
+      "score": 0.058929468137591465,
+      "close": 15.64
+    },
+    {
+      "rank": 7,
+      "instrument": "SH605499",
+      "name": "东鹏饮料",
+      "score": 0.05674936742402881,
+      "close": 198.04
+    },
+    {
+      "rank": 8,
+      "instrument": "SZ301236",
+      "name": "软通动力",
+      "score": 0.055547152688469395,
+      "close": 36.83
+    },
+    {
+      "rank": 9,
+      "instrument": "SZ300274",
+      "name": "阳光电源",
+      "score": 0.054640389048106225,
+      "close": 122.28
+    },
+    {
+      "rank": 10,
+      "instrument": "SZ300896",
+      "name": "爱美客",
+      "score": 0.0516861920188821,
+      "close": 113.14
+    },
+    {
+      "rank": 11,
+      "instrument": "SH603260",
+      "name": "合盛硅业",
+      "score": 0.047006663717982115,
+      "close": 43.02
+    },
+    {
+      "rank": 12,
+      "instrument": "SZ002714",
+      "name": "牧原股份",
+      "score": 0.046277642413899596,
+      "close": 43.45
+    },
+    {
+      "rank": 13,
+      "instrument": "SH600048",
+      "name": "保利发展",
+      "score": 0.04342151038583724,
+      "close": 5.5
+    },
+    {
+      "rank": 14,
+      "instrument": "SH600309",
+      "name": "万华化学",
+      "score": 0.041512111453875046,
+      "close": 86.27
+    },
+    {
+      "rank": 15,
+      "instrument": "SZ000338",
+      "name": "潍柴动力",
+      "score": 0.03697771296080249,
+      "close": 23.88
+    },
+    {
+      "rank": 16,
+      "instrument": "SZ300316",
+      "name": "晶盛机电",
+      "score": 0.03591384850337366,
+      "close": 40.97
+    },
+    {
+      "rank": 17,
+      "instrument": "SH601628",
+      "name": "中国人寿",
+      "score": 0.03463646512962078,
+      "close": 35.69
+    },
+    {
+      "rank": 18,
+      "instrument": "SH600050",
+      "name": "中国联通",
+      "score": 0.03301461232278963,
+      "close": 4.47
+    },
+    {
+      "rank": 19,
+      "instrument": "SZ002311",
+      "name": "海大集团",
+      "score": 0.03273570807599041,
+      "close": 50.26
+    },
+    {
+      "rank": 20,
+      "instrument": "SH601857",
+      "name": "中国石油",
+      "score": 0.03269185760812068,
+      "close": 12.56
+    }
+  ],
+  "strategy": {
+    "buys": [
+      {
+        "instrument": "SZ000002",
+        "name": "万科A"
+      },
+      {
+        "instrument": "SH601336",
+        "name": "新华保险"
+      },
+      {
+        "instrument": "SZ002459",
+        "name": "晶澳科技"
+      },
+      {
+        "instrument": "SH601319",
+        "name": "中国人保"
+      },
+      {
+        "instrument": "SZ300760",
+        "name": "迈瑞医疗"
+      },
+      {
+        "instrument": "SH600438",
+        "name": "通威股份"
+      },
+      {
+        "instrument": "SH605499",
+        "name": "东鹏饮料"
+      },
+      {
+        "instrument": "SZ301236",
+        "name": "软通动力"
+      },
+      {
+        "instrument": "SZ300274",
+        "name": "阳光电源"
+      },
+      {
+        "instrument": "SZ300896",
+        "name": "爱美客"
+      },
+      {
+        "instrument": "SH603260",
+        "name": "合盛硅业"
+      },
+      {
+        "instrument": "SZ002714",
+        "name": "牧原股份"
+      },
+      {
+        "instrument": "SH600048",
+        "name": "保利发展"
+      },
+      {
+        "instrument": "SH600309",
+        "name": "万华化学"
+      },
+      {
+        "instrument": "SZ000338",
+        "name": "潍柴动力"
+      },
+      {
+        "instrument": "SZ300316",
+        "name": "晶盛机电"
+      },
+      {
+        "instrument": "SH601628",
+        "name": "中国人寿"
+      },
+      {
+        "instrument": "SH600050",
+        "name": "中国联通"
+      },
+      {
+        "instrument": "SZ002311",
+        "name": "海大集团"
+      },
+      {
+        "instrument": "SH601857",
+        "name": "中国石油"
+      }
+    ],
+    "sells": [],
+    "holds": [],
+    "target_portfolio": [
+      {
+        "instrument": "SZ000002",
+        "name": "万科A"
+      },
+      {
+        "instrument": "SH601336",
+        "name": "新华保险"
+      },
+      {
+        "instrument": "SZ002459",
+        "name": "晶澳科技"
+      },
+      {
+        "instrument": "SH601319",
+        "name": "中国人保"
+      },
+      {
+        "instrument": "SZ300760",
+        "name": "迈瑞医疗"
+      },
+      {
+        "instrument": "SH600438",
+        "name": "通威股份"
+      },
+      {
+        "instrument": "SH605499",
+        "name": "东鹏饮料"
+      },
+      {
+        "instrument": "SZ301236",
+        "name": "软通动力"
+      },
+      {
+        "instrument": "SZ300274",
+        "name": "阳光电源"
+      },
+      {
+        "instrument": "SZ300896",
+        "name": "爱美客"
+      },
+      {
+        "instrument": "SH603260",
+        "name": "合盛硅业"
+      },
+      {
+        "instrument": "SZ002714",
+        "name": "牧原股份"
+      },
+      {
+        "instrument": "SH600048",
+        "name": "保利发展"
+      },
+      {
+        "instrument": "SH600309",
+        "name": "万华化学"
+      },
+      {
+        "instrument": "SZ000338",
+        "name": "潍柴动力"
+      },
+      {
+        "instrument": "SZ300316",
+        "name": "晶盛机电"
+      },
+      {
+        "instrument": "SH601628",
+        "name": "中国人寿"
+      },
+      {
+        "instrument": "SH600050",
+        "name": "中国联通"
+      },
+      {
+        "instrument": "SZ002311",
+        "name": "海大集团"
+      },
+      {
+        "instrument": "SH601857",
+        "name": "中国石油"
+      }
+    ]
+  },
+  "total_instruments_scored": 300,
+  "stock_name_map_path": "/root/projects/qlib/examples/local_stock_names.json"
+}

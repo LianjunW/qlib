@@ -30,6 +30,12 @@ import pandas as pd
 QLIB_DATA_DIR = os.path.expanduser("~/.qlib/qlib_data/cn_data")
 REPORT_DIR = os.path.join(os.path.dirname(__file__), "daily_report")
 DEFAULT_STOCK_NAME_MAP_PATH = os.path.join(os.path.dirname(__file__), "local_stock_names.json")
+BAOSTOCK_SOURCE_DIR = os.path.join(
+    os.path.dirname(__file__), "..", "scripts", "data_collector", "baostock", "source"
+)
+BAOSTOCK_NORMALIZE_DIR = os.path.join(
+    os.path.dirname(__file__), "..", "scripts", "data_collector", "baostock", "normalize"
+)
 
 
 def get_latest_calendar_date(qlib_data_dir: Optional[str] = None) -> Optional[str]:
@@ -159,6 +165,7 @@ def load_model_and_predict(
     recorder_id: str,
     experiment_name: str,
     latest_date: str,
+    target_date: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, pd.Timestamp]:
     from qlib.workflow import R
     from qlib.utils import init_instance_by_config
@@ -205,34 +212,77 @@ def load_model_and_predict(
         pred = pred.rename(columns={pred.columns[0]: "score"})
 
     pred = pred.sort_index()
-    latest_ts = pred.index.get_level_values("datetime").max()
-    latest_pred = pred.loc[latest_ts].copy()
+    available_dates = pd.DatetimeIndex(pred.index.get_level_values("datetime").unique()).sort_values()
+
+    if target_date is not None:
+        target_ts = pd.Timestamp(target_date).normalize()
+        matching_dates = available_dates[available_dates.normalize() <= target_ts]
+        if len(matching_dates) == 0:
+            raise ValueError(
+                f"No prediction rows are available on or before requested date {target_date}."
+            )
+        selected_ts = matching_dates[-1]
+        if selected_ts.normalize() != target_ts:
+            print(
+                f"Requested report date {target_date} is not directly available; "
+                f"using latest prediction date {selected_ts.strftime('%Y-%m-%d')} instead."
+            )
+    else:
+        selected_ts = available_dates[-1]
+
+    latest_pred = pred.loc[selected_ts].copy()
 
     if isinstance(latest_pred.index, pd.MultiIndex):
         latest_pred = latest_pred.droplevel("datetime")
 
     latest_pred = latest_pred.sort_values("score", ascending=False)
-    return latest_pred, latest_ts
+    return latest_pred, selected_ts
+
+
+def _baostock_csv_name(instrument: str) -> str:
+    symbol = str(instrument).strip().lower()
+    if symbol.startswith(("sh", "sz", "bj")):
+        return f"{symbol}.csv"
+    raise ValueError(f"Unsupported instrument format: {instrument}")
+
+
+def _get_price_from_baostock_source(instrument: str, date: str) -> Optional[float]:
+    path = os.path.abspath(os.path.join(BAOSTOCK_SOURCE_DIR, _baostock_csv_name(instrument)))
+    if not os.path.isfile(path):
+        return None
+    try:
+        df = pd.read_csv(path, usecols=["date", "close"])
+        row = df.loc[df["date"] == date]
+        if row.empty:
+            return None
+        return float(row.iloc[-1]["close"])
+    except Exception:
+        return None
+
+
+def _get_price_from_baostock_normalize(instrument: str, date: str) -> Optional[float]:
+    path = os.path.abspath(os.path.join(BAOSTOCK_NORMALIZE_DIR, _baostock_csv_name(instrument)))
+    if not os.path.isfile(path):
+        return None
+    try:
+        df = pd.read_csv(path, usecols=["date", "adjclose"])
+        row = df.loc[df["date"] == date]
+        if row.empty:
+            return None
+        return float(row.iloc[-1]["adjclose"])
+    except Exception:
+        return None
 
 
 def get_latest_prices(instruments: List[str], date: str) -> pd.Series:
-    from qlib.data import D
-
-    try:
-        price_data = D.features(
-            instruments,
-            ["$close", "$factor"],
-            start_time=date,
-            end_time=date,
-            freq="day",
-        )
-        if price_data is not None and not price_data.empty:
-            close = price_data["$close"].droplevel("datetime")
-            factor = price_data["$factor"].droplevel("datetime")
-            return (close / factor).reindex(close.index)
-    except Exception:
-        pass
-    return pd.Series(dtype=float)
+    prices: Dict[str, float] = {}
+    for instrument in instruments:
+        raw_price = _get_price_from_baostock_source(instrument, date)
+        if raw_price is None:
+            raw_price = _get_price_from_baostock_normalize(instrument, date)
+        if raw_price is not None:
+            prices[str(instrument)] = raw_price
+    return pd.Series(prices, dtype=float)
 
 
 def generate_strategy_recommendations(
@@ -318,6 +368,7 @@ def format_symbol_list(symbols: List[str], stock_name_map: Dict[str, str], limit
 
 def format_report(
     date_str: str,
+    requested_date_str: Optional[str],
     scores: pd.DataFrame,
     prices: pd.Series,
     recommendations: Dict,
@@ -333,6 +384,10 @@ def format_report(
     lines.append(f"Experiment: {experiment_name}")
     lines.append(f"Recorder ID: {recorder_id}")
     lines.append(f"Stock Name Map: {os.path.basename(DEFAULT_STOCK_NAME_MAP_PATH)}")
+    if requested_date_str is not None:
+        lines.append(f"Requested Report Date: {requested_date_str}")
+        if requested_date_str != date_str:
+            lines.append(f"Actual Prediction Date: {date_str}")
 
     lines.append(f"\nMarket Signal: {recommendations['market_signal']}")
     lines.append(f"  {recommendations['market_signal_description']}")
@@ -384,6 +439,7 @@ def format_report(
 
     json_report = {
         "date": date_str,
+        "requested_date": requested_date_str,
         "generated_at": datetime.now().isoformat(),
         "experiment_name": experiment_name,
         "recorder_id": recorder_id,
@@ -452,6 +508,7 @@ def run_pipeline(
         recorder_id=recorder_id,
         experiment_name=experiment_name,
         latest_date=latest_date,
+        target_date=score_date,
     )
     date_str = str(pred_date)[:10]
     print(f"Predictions generated for: {date_str}")
@@ -468,6 +525,7 @@ def run_pipeline(
 
     console_text, json_report = format_report(
         date_str=date_str,
+        requested_date_str=score_date,
         scores=scores,
         prices=prices,
         recommendations=recommendations,
@@ -516,7 +574,7 @@ def parse_args():
         "--score-date",
         default=None,
         metavar="YYYY-MM-DD",
-        help="End date for scoring window. Default uses the last day in calendars/day.txt.",
+        help="Generate a daily report for the specified date. If that date is unavailable, fallback to the nearest earlier prediction date.",
     )
     parser.add_argument(
         "--stock-name-map",

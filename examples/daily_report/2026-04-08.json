@@ -1,0 +1,328 @@
+{
+  "date": "2026-04-08",
+  "requested_date": "2026-04-08",
+  "generated_at": "2026-04-12T11:53:45.284798",
+  "experiment_name": "workflow",
+  "recorder_id": "a82904595add4caeaadea5e2e10903c7",
+  "market_signal": "BULLISH",
+  "market_signal_description": "Strong positive score spread, multiple high-conviction opportunities",
+  "score_stats": {
+    "mean": 0.000981637099862258,
+    "median": -0.0018835924974246196,
+    "top_k_mean": 0.05050877437778341,
+    "bottom_k_mean": -0.031168098099331354,
+    "spread": 0.08167687247711476
+  },
+  "top_scores": [
+    {
+      "rank": 1,
+      "instrument": "SZ300274",
+      "name": "阳光电源",
+      "score": 0.08476434190060667,
+      "close": 126.99
+    },
+    {
+      "rank": 2,
+      "instrument": "SZ000002",
+      "name": "万科A",
+      "score": 0.08387439410534986,
+      "close": 3.95
+    },
+    {
+      "rank": 3,
+      "instrument": "SH600438",
+      "name": "通威股份",
+      "score": 0.07815959783914332,
+      "close": 16.4
+    },
+    {
+      "rank": 4,
+      "instrument": "SZ002459",
+      "name": "晶澳科技",
+      "score": 0.07287576599219295,
+      "close": 10.91
+    },
+    {
+      "rank": 5,
+      "instrument": "SH605499",
+      "name": "东鹏饮料",
+      "score": 0.07134021674201954,
+      "close": 206.33
+    },
+    {
+      "rank": 6,
+      "instrument": "SH600048",
+      "name": "保利发展",
+      "score": 0.0647216232321479,
+      "close": 5.7
+    },
+    {
+      "rank": 7,
+      "instrument": "SH601319",
+      "name": "中国人保",
+      "score": 0.052790165868455925,
+      "close": 7.57
+    },
+    {
+      "rank": 8,
+      "instrument": "SH688012",
+      "name": "中微公司",
+      "score": 0.04981227094340716,
+      "close": 317.69
+    },
+    {
+      "rank": 9,
+      "instrument": "SZ300896",
+      "name": "爱美客",
+      "score": 0.049677308113327705,
+      "close": 117.0
+    },
+    {
+      "rank": 10,
+      "instrument": "SH600027",
+      "name": "华电国际",
+      "score": 0.049306795411995015,
+      "close": 4.64
+    },
+    {
+      "rank": 11,
+      "instrument": "SH600309",
+      "name": "万华化学",
+      "score": 0.044656889460544365,
+      "close": 86.44
+    },
+    {
+      "rank": 12,
+      "instrument": "SZ001965",
+      "name": "招商公路",
+      "score": 0.044542234544491875,
+      "close": 8.9
+    },
+    {
+      "rank": 13,
+      "instrument": "SH688256",
+      "name": "寒武纪",
+      "score": 0.04274594458977001,
+      "close": 1164.0
+    },
+    {
+      "rank": 14,
+      "instrument": "SZ001979",
+      "name": "招商蛇口",
+      "score": 0.04003472551783406,
+      "close": 8.08
+    },
+    {
+      "rank": 15,
+      "instrument": "SZ002709",
+      "name": "天赐材料",
+      "score": 0.032521854294482115,
+      "close": 44.98
+    },
+    {
+      "rank": 16,
+      "instrument": "SH688169",
+      "name": "石头科技",
+      "score": 0.03141507323156037,
+      "close": 118.83
+    },
+    {
+      "rank": 17,
+      "instrument": "SH688036",
+      "name": "传音控股",
+      "score": 0.030253955573973382,
+      "close": 53.61
+    },
+    {
+      "rank": 18,
+      "instrument": "SH601868",
+      "name": "中国能建",
+      "score": 0.0292475859077956,
+      "close": 2.93
+    },
+    {
+      "rank": 19,
+      "instrument": "SH600219",
+      "name": "南山铝业",
+      "score": 0.02881199592022267,
+      "close": 6.32
+    },
+    {
+      "rank": 20,
+      "instrument": "SH603799",
+      "name": "华友钴业",
+      "score": 0.028622748366347688,
+      "close": 61.09
+    }
+  ],
+  "strategy": {
+    "buys": [
+      {
+        "instrument": "SZ300274",
+        "name": "阳光电源"
+      },
+      {
+        "instrument": "SZ000002",
+        "name": "万科A"
+      },
+      {
+        "instrument": "SH600438",
+        "name": "通威股份"
+      },
+      {
+        "instrument": "SZ002459",
+        "name": "晶澳科技"
+      },
+      {
+        "instrument": "SH605499",
+        "name": "东鹏饮料"
+      },
+      {
+        "instrument": "SH600048",
+        "name": "保利发展"
+      },
+      {
+        "instrument": "SH601319",
+        "name": "中国人保"
+      },
+      {
+        "instrument": "SH688012",
+        "name": "中微公司"
+      },
+      {
+        "instrument": "SZ300896",
+        "name": "爱美客"
+      },
+      {
+        "instrument": "SH600027",
+        "name": "华电国际"
+      },
+      {
+        "instrument": "SH600309",
+        "name": "万华化学"
+      },
+      {
+        "instrument": "SZ001965",
+        "name": "招商公路"
+      },
+      {
+        "instrument": "SH688256",
+        "name": "寒武纪"
+      },
+      {
+        "instrument": "SZ001979",
+        "name": "招商蛇口"
+      },
+      {
+        "instrument": "SZ002709",
+        "name": "天赐材料"
+      },
+      {
+        "instrument": "SH688169",
+        "name": "石头科技"
+      },
+      {
+        "instrument": "SH688036",
+        "name": "传音控股"
+      },
+      {
+        "instrument": "SH601868",
+        "name": "中国能建"
+      },
+      {
+        "instrument": "SH600219",
+        "name": "南山铝业"
+      },
+      {
+        "instrument": "SH603799",
+        "name": "华友钴业"
+      }
+    ],
+    "sells": [],
+    "holds": [],
+    "target_portfolio": [
+      {
+        "instrument": "SZ300274",
+        "name": "阳光电源"
+      },
+      {
+        "instrument": "SZ000002",
+        "name": "万科A"
+      },
+      {
+        "instrument": "SH600438",
+        "name": "通威股份"
+      },
+      {
+        "instrument": "SZ002459",
+        "name": "晶澳科技"
+      },
+      {
+        "instrument": "SH605499",
+        "name": "东鹏饮料"
+      },
+      {
+        "instrument": "SH600048",
+        "name": "保利发展"
+      },
+      {
+        "instrument": "SH601319",
+        "name": "中国人保"
+      },
+      {
+        "instrument": "SH688012",
+        "name": "中微公司"
+      },
+      {
+        "instrument": "SZ300896",
+        "name": "爱美客"
+      },
+      {
+        "instrument": "SH600027",
+        "name": "华电国际"
+      },
+      {
+        "instrument": "SH600309",
+        "name": "万华化学"
+      },
+      {
+        "instrument": "SZ001965",
+        "name": "招商公路"
+      },
+      {
+        "instrument": "SH688256",
+        "name": "寒武纪"
+      },
+      {
+        "instrument": "SZ001979",
+        "name": "招商蛇口"
+      },
+      {
+        "instrument": "SZ002709",
+        "name": "天赐材料"
+      },
+      {
+        "instrument": "SH688169",
+        "name": "石头科技"
+      },
+      {
+        "instrument": "SH688036",
+        "name": "传音控股"
+      },
+      {
+        "instrument": "SH601868",
+        "name": "中国能建"
+      },
+      {
+        "instrument": "SH600219",
+        "name": "南山铝业"
+      },
+      {
+        "instrument": "SH603799",
+        "name": "华友钴业"
+      }
+    ]
+  },
+  "total_instruments_scored": 300,
+  "stock_name_map_path": "/root/projects/qlib/examples/local_stock_names.json"
+}
