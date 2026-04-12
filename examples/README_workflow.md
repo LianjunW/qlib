@@ -44,6 +44,47 @@ python workflow_by_code_v2.py bridge \
 
 已生成 NAV 图：`examples/backtest_log/workflow_latest_nav_2026-04-10.html`
 
+## 调试记录
+
+### 同一 recorder 下 backtest vs bridge 对比
+
+测试对象统一为：
+- 实验：`workflow_latest`
+- Recorder：`ece683722ed74ac19fce330615094098`
+- 时间区间：`2024-01-01 ~ 2026-04-10`
+- 策略参数：`topk=20`、`n_drop=2`、`hold_thresh=1`
+
+执行命令：
+
+```bash
+python workflow_by_code_v2.py backtest \
+  --experiment workflow_latest \
+  --recorder-id ece683722ed74ac19fce330615094098 \
+  --start 2024-01-01 --end 2026-04-10
+
+python workflow_by_code_v2.py bridge \
+  --experiment workflow_latest \
+  --recorder-id ece683722ed74ac19fce330615094098 \
+  --start 2024-01-01 --end 2026-04-10 \
+  --plot-output backtest_log/workflow_by_code_v2_bridge_compare_2026-04-10.html
+```
+
+实测结果：
+
+| 指标 | Qlib `backtest` | Backtrader `bridge` |
+|------|------------------|---------------------|
+| 组合累计收益 | `75.30%` | `59.67%` |
+| 组合年化收益 | `29.51%` | `24.06%` |
+| 最大回撤 | `30.71%` | `27.34%` |
+| 基准年化收益 | `-44.37%` | `-46.47%` |
+| 超额年化收益 | `50.85%`（含成本） | `70.53%` |
+
+说明：
+- `backtest` 终端默认打印的是超额收益指标，不是组合绝对收益；上表中的 Qlib 组合累计收益、组合年化收益、最大回撤，是从 `report_normal_1day.pkl` 的账户曲线反推出来的。
+- `bridge` 结果来自 Backtrader 的真实持仓/现金曲线，输出图保存在 `examples/backtest_log/workflow_by_code_v2_bridge_compare_2026-04-10.html`。
+- `bridge` 的累计收益和年化收益低于 `backtest`，主要因为它加入了 A 股 `100` 股整手、现金约束和 `95%` 仓位限制，更接近实盘执行。
+- 两边基准年化存在小幅差异，是因为 benchmark 收益序列的构造口径不同：Qlib 直接使用组合分析报告中的 `bench` 序列，Backtrader 侧则按指数收盘价重新计算日收益。
+
 ---
 
 ## workflow_by_code_v2.py
