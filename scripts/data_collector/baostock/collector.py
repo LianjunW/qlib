@@ -323,6 +323,28 @@ class BaostockCollectorCN1d(BaseCollector):
             self.save_instrument(symbol, df)
         return _result
 
+    def save_instrument(self, symbol, df: pd.DataFrame):
+        """Persist daily source csv in date order and keep only the latest row per trading day."""
+        if df is None or df.empty:
+            logger.warning(f"{symbol} is empty")
+            return
+
+        norm_symbol = self.normalize_symbol(symbol)
+        instrument_path = self.save_dir.joinpath(f"{code_to_fname(norm_symbol)}.csv")
+        df = df.copy()
+        df["symbol"] = code_to_fname(norm_symbol)
+        df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.normalize()
+        df = df.dropna(subset=["date"])
+
+        if instrument_path.exists():
+            old_df = pd.read_csv(instrument_path, low_memory=False)
+            if "date" in old_df.columns:
+                old_df["date"] = pd.to_datetime(old_df["date"], errors="coerce").dt.normalize()
+            df = pd.concat([old_df, df], sort=False, ignore_index=True)
+
+        df = df.dropna(subset=["date"]).sort_values(["date"]).drop_duplicates(["date"], keep="last")
+        df.to_csv(instrument_path, index=False, date_format="%Y-%m-%d")
+
 
 class BaostockNormalize(BaseNormalize):
     COLUMNS = ["open", "close", "high", "low", "volume"]
@@ -481,7 +503,10 @@ class BaostockNormalizeCN1dExtend(BaostockNormalizeCN1d):
                 df[col] = df[col] / (new_latest_data[col] / old_latest_data[col])
             else:
                 df[col] = df[col] * (old_latest_data[col] / new_latest_data[col])
-        return df.drop(df.index[0]).reset_index()
+        # Only drop the overlap row when the first row is the old latest_date.
+        if df.index[0].normalize() == latest_date.normalize():
+            df = df.drop(df.index[0])
+        return df.reset_index()
 
 
 class Run(BaseRun):
@@ -603,6 +628,11 @@ class Run(BaseRun):
         normalize_skip_existing: bool = True,
         update_index_instruments: bool = False,
         refresh_csi300_instruments_baostock: bool = False,
+        start_from_bin_end: bool = False,
+        bin_end_field: str = "close",
+        skip_download: bool = False,
+        skip_normalize: bool = False,
+        repair_instruments_end_by_bin: bool = False,
     ):
         """
         Incrementally update CN daily qlib data using baostock.
@@ -645,29 +675,61 @@ class Run(BaseRun):
             logger.warning(f"end_date={end_date} is not later than latest qlib date={latest_date}, nothing to update")
             return
 
-        self.download_data(
-            delay=delay,
-            start=latest_date,
-            end=end_date,
-            check_data_length=check_data_length,
-            qlib_data_1d_dir=qlib_data_1d_dir,
-            instrument_scope=scope,
-            include_index_symbols=include_index_symbols,
-            source_skip_existing=source_skip_existing,
-            normalize_dir=str(self.normalize_dir),
+        logger.info(
+            "start incremental update: "
+            f"scope={scope}, latest_qlib_date={latest_date}, end_date={end_date}, "
+            f"source_dir={self.source_dir}, normalize_dir={self.normalize_dir}, qlib_dir={qlib_data_1d_dir}"
         )
+
+        if repair_instruments_end_by_bin:
+            try:
+                self._repair_instruments_end_by_bin(
+                    qlib_data_1d_dir=qlib_data_1d_dir, scope=scope, field=bin_end_field
+                )
+            except Exception as e:
+                logger.warning(f"repair instruments end by bin failed: {e}")
+
+        start_date = latest_date
+        if start_from_bin_end:
+            try:
+                start_date = self._infer_bin_start_date(
+                    qlib_data_1d_dir=qlib_data_1d_dir,
+                    scope=scope,
+                    field=bin_end_field,
+                )
+                logger.info(f"override start_date from bin end: {start_date}")
+            except Exception as e:
+                logger.warning(f"fallback to latest_date={latest_date}, failed to infer bin end: {e}")
+
+        if not skip_download:
+            self.download_data(
+                delay=delay,
+                start=start_date,
+                end=end_date,
+                check_data_length=check_data_length,
+                qlib_data_1d_dir=qlib_data_1d_dir,
+                instrument_scope=scope,
+                include_index_symbols=include_index_symbols,
+                source_skip_existing=source_skip_existing,
+                normalize_dir=str(self.normalize_dir),
+            )
+        else:
+            logger.info("skip download step by request")
 
         self.max_workers = (
             max(multiprocessing.cpu_count() - 2, 1)
             if self.max_workers is None or self.max_workers <= 1
             else self.max_workers
         )
-        self.normalize_data_1d_extend(
-            qlib_data_1d_dir,
-            qlib_instrument_market=scope,
-            normalize_skip_existing=normalize_skip_existing,
-            request_end_exclusive=end_date,
-        )
+        if not skip_normalize:
+            self.normalize_data_1d_extend(
+                qlib_data_1d_dir,
+                qlib_instrument_market=scope,
+                normalize_skip_existing=normalize_skip_existing,
+                request_end_exclusive=end_date,
+            )
+        else:
+            logger.info("skip normalize step by request")
 
         dump = DumpDataUpdate(
             csv_path=self.normalize_dir,
@@ -694,6 +756,102 @@ class Run(BaseRun):
                     get_instruments(qlib_data_1d_dir, index_name, market_index="cn_index")
                 except Exception as e:
                     logger.warning(f"skip index refresh {index_name}: {e}")
+
+    @staticmethod
+    def _infer_bin_start_date(qlib_data_1d_dir: str, scope: str, field: str = "close") -> str:
+        """
+        Infer a safe incremental start date based on existing bin tails.
+
+        This prevents gaps when the bin files are behind the calendar/instruments end date.
+        """
+        import struct
+
+        qlib_dir = Path(qlib_data_1d_dir)
+        cal_path = qlib_dir.joinpath("calendars", "day.txt")
+        cal = [x.strip() for x in cal_path.read_text(encoding="utf-8").splitlines() if x.strip()]
+        if not cal:
+            raise ValueError("calendar is empty")
+
+        inst_path = qlib_dir.joinpath("instruments", f"{scope}.txt" if scope != "all" else "all.txt")
+        if not inst_path.exists():
+            inst_path = qlib_dir.joinpath("instruments", "all.txt")
+        inst_df = pd.read_csv(inst_path, sep="\t", header=None, names=["symbol", "start", "end"])
+        if inst_df.empty:
+            raise ValueError("instruments is empty")
+
+        last_dates = []
+        for sym in inst_df["symbol"].astype(str):
+            sym = sym.strip().upper()
+            if not sym:
+                continue
+            bin_path = qlib_dir.joinpath("features", sym.lower(), f"{field}.day.bin")
+            if not bin_path.exists():
+                continue
+            data = bin_path.read_bytes()
+            if len(data) < 8:
+                continue
+            date_index = int(struct.unpack("<f", data[:4])[0])
+            n = len(data) // 4
+            last_idx = date_index + (n - 2)
+            if 0 <= last_idx < len(cal):
+                last_dates.append(cal[last_idx])
+
+        if not last_dates:
+            raise ValueError("no valid bin tails found")
+        # use the minimum tail to avoid gaps across symbols
+        return min(last_dates)
+
+    @staticmethod
+    def _repair_instruments_end_by_bin(qlib_data_1d_dir: str, scope: str, field: str = "close") -> None:
+        """
+        Align instruments/all.txt end dates with actual bin tails to keep dump_update incremental.
+        """
+        import struct
+
+        qlib_dir = Path(qlib_data_1d_dir)
+        cal_path = qlib_dir.joinpath("calendars", "day.txt")
+        cal = [x.strip() for x in cal_path.read_text(encoding="utf-8").splitlines() if x.strip()]
+        if not cal:
+            raise ValueError("calendar is empty")
+
+        scope_path = qlib_dir.joinpath("instruments", f"{scope}.txt" if scope != "all" else "all.txt")
+        if not scope_path.exists():
+            scope_path = qlib_dir.joinpath("instruments", "all.txt")
+        scope_df = pd.read_csv(scope_path, sep="\t", header=None, names=["symbol", "start", "end"])
+        scope_set = set(scope_df["symbol"].astype(str).str.strip())
+
+        all_path = qlib_dir.joinpath("instruments", "all.txt")
+        all_df = pd.read_csv(all_path, sep="\t", header=None, names=["symbol", "start", "end"])
+
+        def _bin_last(sym: str) -> Optional[str]:
+            bin_path = qlib_dir.joinpath("features", sym.lower(), f"{field}.day.bin")
+            if not bin_path.exists():
+                return None
+            data = bin_path.read_bytes()
+            if len(data) < 8:
+                return None
+            date_index = int(struct.unpack("<f", data[:4])[0])
+            n = len(data) // 4
+            last_idx = date_index + (n - 2)
+            if 0 <= last_idx < len(cal):
+                return cal[last_idx]
+            return None
+
+        changed = 0
+        for i, row in all_df.iterrows():
+            sym = str(row["symbol"]).strip().upper()
+            if sym not in scope_set:
+                continue
+            last = _bin_last(sym)
+            if last and str(row["end"]) != last:
+                all_df.at[i, "end"] = last
+                changed += 1
+
+        if changed:
+            backup = all_path.with_suffix(".txt.bak")
+            all_path.replace(backup)
+            all_df.to_csv(all_path, sep="\t", header=False, index=False)
+            logger.info(f"repaired instruments/all.txt end dates from bin tails, changed={changed}")
 
     def update_csi300_instruments_from_baostock(
         self,
