@@ -241,6 +241,96 @@ Trading days: 383
 Saved plot to backtest_log/union_pred_backtrader_trade100.html
 ```
 
+## daily_update_and_score.py 精简版测试
+时间：
+`2026-04-12 10:45`
+
+调整：
+- `daily_update_and_score.py` 移除数据更新相关代码，只保留本地数据评分流程
+- 保留 `--recorder-id` 指定功能；不指定时仍可自动选择最新可用 recorder
+- 增加本地股票名称映射文件 `examples/local_stock_names.json`
+- 控制台输出和 JSON 报告都显示股票代码 + 股票名称
+
+命令：
+```bash
+.venv/bin/python examples/daily_update_and_score.py \
+  --recorder-id a82904595add4caeaadea5e2e10903c7 \
+  --output-dir examples/daily_report
+```
+
+结果：
+```text
+Latest trading date in data (calendars/day.txt): 2026-04-10
+
+Loading model from recorder a82904595add4caeaadea5e2e10903c7...
+Predictions generated for: 2026-04-10
+Total instruments scored: 300
+
+Daily Score Report - 2026-04-10
+Experiment: workflow
+Recorder ID: a82904595add4caeaadea5e2e10903c7
+Stock Name Map: local_stock_names.json
+
+Market Signal: MILDLY_BULLISH
+Mean: -0.0083  Median: -0.0121
+Top-20 mean: 0.0418  Bottom-20 mean: -0.0381
+Spread: 0.0799
+
+Top 5:
+1  SZ002384  东山精密  0.098325  146.92
+2  SZ000002  万科A    0.067952  2.24
+3  SZ002714  牧原股份  0.058561  30.54
+4  SH600048  保利发展  0.056327  3.66
+5  SH605499  东鹏饮料  0.051258  154.63
+
+Report saved to examples/daily_report/2026-04-10.json
+```
+
+## daily_update_and_score.py 基于 baostock 刷新本地名称表
+时间：
+`2026-04-12 11:10`
+
+调整：
+- `daily_update_and_score.py` 增加 `--refresh-stock-name-map` 和 `--refresh-stock-name-map-only`
+- 本地股票名称表改为可通过 `baostock.query_stock_basic()` 远端刷新
+- 刷新时保留原有本地手工映射，再合并 baostock 返回的 A 股名称
+
+刷新命令：
+```bash
+env -u ALL_PROXY -u all_proxy -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy \
+  .venv/bin/python examples/daily_update_and_score.py --refresh-stock-name-map-only
+```
+
+刷新结果：
+```text
+login success!
+logout success!
+Refreshed stock name map via baostock: 5518 A-share names
+Saved merged stock name map to /root/projects/qlib/examples/local_stock_names.json (total 5520 entries)
+```
+
+验证命令：
+```bash
+.venv/bin/python examples/daily_update_and_score.py \
+  --recorder-id a82904595add4caeaadea5e2e10903c7 \
+  --output-dir examples/daily_report
+```
+
+验证结果：
+```text
+Daily Score Report - 2026-04-10
+Experiment: workflow
+Recorder ID: a82904595add4caeaadea5e2e10903c7
+Stock Name Map: local_stock_names.json
+
+Top 5:
+1  SZ002384  东山精密  0.098325  146.92
+2  SZ000002  万科A    0.067952  2.24
+3  SZ002714  牧原股份  0.058561  30.54
+4  SH600048  保利发展  0.056327  3.66
+5  SH605499  东鹏饮料  0.051258  154.63
+```
+
 结论：
 在 union constituent 预测覆盖修复基础上，降低交易成本后，bridge 回测收益由此前 README 中记录的 `34.12% / 21.31%` 提升到 `42.74% / 26.38%`，同时最大回撤约为 `20.22%`。
 
