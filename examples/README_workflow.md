@@ -21,6 +21,7 @@ python workflow_by_code_v2.py bridge --plot-output nav.html
 已验证可复用的源模型 recorder:
 - `workflow/a82904595add4caeaadea5e2e10903c7`：已有训练权重 `params.pkl`
 - `workflow_latest/ece683722ed74ac19fce330615094098`：基于上面的模型扩展预测到 `2026-04-10` 后生成
+- `workflow_latest_refresh/5ceac4f6c45e4cde89e6fdcd45950755`：在 `2026-04-12` 发布的数据包上重新生成预测并回测后的最新 recorder
 
 ```bash
 cd examples/
@@ -46,44 +47,53 @@ python workflow_by_code_v2.py bridge \
 
 ## 调试记录
 
-### 同一 recorder 下 backtest vs bridge 对比
+### 基于最新 Qlib 数据包的 backtest vs bridge 对比
 
 测试对象统一为：
-- 实验：`workflow_latest`
-- Recorder：`ece683722ed74ac19fce330615094098`
+- 数据包：`https://github.com/chenditc/investment_data/releases/download/2026-04-12/qlib_bin.tar.gz`
+- 实验：`workflow_latest_refresh`
+- Recorder：`5ceac4f6c45e4cde89e6fdcd45950755`
 - 时间区间：`2024-01-01 ~ 2026-04-10`
 - 策略参数：`topk=20`、`n_drop=2`、`hold_thresh=1`
+- 预测股票池：`348` 只（相较旧数据下的 `300` 只明显扩大）
 
 执行命令：
 
 ```bash
+python workflow_by_code_v2.py predict \
+  --experiment workflow \
+  --recorder-id a82904595add4caeaadea5e2e10903c7 \
+  --start 2024-01-01 --end 2026-04-10 \
+  --new-experiment workflow_latest_refresh
+
 python workflow_by_code_v2.py backtest \
-  --experiment workflow_latest \
-  --recorder-id ece683722ed74ac19fce330615094098 \
+  --experiment workflow_latest_refresh \
+  --recorder-id 5ceac4f6c45e4cde89e6fdcd45950755 \
   --start 2024-01-01 --end 2026-04-10
 
 python workflow_by_code_v2.py bridge \
-  --experiment workflow_latest \
-  --recorder-id ece683722ed74ac19fce330615094098 \
+  --experiment workflow_latest_refresh \
+  --recorder-id 5ceac4f6c45e4cde89e6fdcd45950755 \
   --start 2024-01-01 --end 2026-04-10 \
-  --plot-output backtest_log/workflow_by_code_v2_bridge_compare_2026-04-10.html
+  --plot-output backtest_log/workflow_latest_refresh_bridge_2026-04-10.html
 ```
 
 实测结果：
 
 | 指标 | Qlib `backtest` | Backtrader `bridge` |
 |------|------------------|---------------------|
-| 组合累计收益 | `75.30%` | `59.67%` |
-| 组合年化收益 | `29.51%` | `24.06%` |
-| 最大回撤 | `30.71%` | `27.34%` |
-| 基准年化收益 | `-44.37%` | `-46.47%` |
-| 超额年化收益 | `50.85%`（含成本） | `70.53%` |
+| 组合累计收益 | `122.76%` | `116.45%` |
+| 组合年化收益 | `44.63%` | `42.63%` |
+| 最大回撤 | `23.83%` | `21.58%` |
+| 基准年化收益 | `14.88%` | `15.58%` |
+| 超额年化收益 | `25.26%`（含成本） | `27.06%` |
 
 说明：
 - `backtest` 终端默认打印的是超额收益指标，不是组合绝对收益；上表中的 Qlib 组合累计收益、组合年化收益、最大回撤，是从 `report_normal_1day.pkl` 的账户曲线反推出来的。
-- `bridge` 结果来自 Backtrader 的真实持仓/现金曲线，输出图保存在 `examples/backtest_log/workflow_by_code_v2_bridge_compare_2026-04-10.html`。
-- `bridge` 的累计收益和年化收益低于 `backtest`，主要因为它加入了 A 股 `100` 股整手、现金约束和 `95%` 仓位限制，更接近实盘执行。
-- 两边基准年化存在小幅差异，是因为 benchmark 收益序列的构造口径不同：Qlib 直接使用组合分析报告中的 `bench` 序列，Backtrader 侧则按指数收盘价重新计算日收益。
+- `bridge` 结果来自 Backtrader 的真实持仓/现金曲线，输出图保存在 `examples/backtest_log/workflow_latest_refresh_bridge_2026-04-10.html`。
+- `bridge` 的累计收益和年化收益仍略低于 `backtest`，主要因为它加入了 A 股 `100` 股整手、现金约束和 `95%` 仓位限制，更接近实盘执行。
+- 两边基准年化只剩小幅差异，说明在最新数据包下，两种回测器的结果方向和量级已经更接近。
+- 这轮结果与旧调试记录差异很大，核心原因不是代码改动，而是新数据包将预测股票池从 `300` 只扩展到 `348` 只，同时 benchmark 序列也发生了变化。
 
 ---
 
