@@ -1,0 +1,327 @@
+{
+  "date": "2026-04-10",
+  "generated_at": "2026-04-12T11:12:46.781506",
+  "experiment_name": "workflow",
+  "recorder_id": "a82904595add4caeaadea5e2e10903c7",
+  "market_signal": "MILDLY_BULLISH",
+  "market_signal_description": "Moderate positive scores, some differentiation among stocks",
+  "score_stats": {
+    "mean": -0.008316987758847589,
+    "median": -0.0121152447761569,
+    "top_k_mean": 0.04177066892741026,
+    "bottom_k_mean": -0.038097125016304946,
+    "spread": 0.07986779394371521
+  },
+  "top_scores": [
+    {
+      "rank": 1,
+      "instrument": "SZ002384",
+      "name": "东山精密",
+      "score": 0.09832539625794344,
+      "close": 146.9161376953125
+    },
+    {
+      "rank": 2,
+      "instrument": "SZ000002",
+      "name": "万科A",
+      "score": 0.06795173554931933,
+      "close": 2.236708641052246
+    },
+    {
+      "rank": 3,
+      "instrument": "SZ002714",
+      "name": "牧原股份",
+      "score": 0.058560522560888596,
+      "close": 30.53949546813965
+    },
+    {
+      "rank": 4,
+      "instrument": "SH600048",
+      "name": "保利发展",
+      "score": 0.05632742699692073,
+      "close": 3.660440683364868
+    },
+    {
+      "rank": 5,
+      "instrument": "SH605499",
+      "name": "东鹏饮料",
+      "score": 0.05125830566934468,
+      "close": 154.63267517089844
+    },
+    {
+      "rank": 6,
+      "instrument": "SH600027",
+      "name": "华电国际",
+      "score": 0.04935734995481231,
+      "close": 3.3362972736358643
+    },
+    {
+      "rank": 7,
+      "instrument": "SZ002459",
+      "name": "晶澳科技",
+      "score": 0.045910628482338754,
+      "close": 6.937536239624023
+    },
+    {
+      "rank": 8,
+      "instrument": "SH688256",
+      "name": "寒武纪",
+      "score": 0.041929262864393545,
+      "close": 2116.65380859375
+    },
+    {
+      "rank": 9,
+      "instrument": "SH600438",
+      "name": "通威股份",
+      "score": 0.03930775638832495,
+      "close": 12.643375396728516
+    },
+    {
+      "rank": 10,
+      "instrument": "SZ002648",
+      "name": "卫星化学",
+      "score": 0.03638718030503509,
+      "close": 16.9179630279541
+    },
+    {
+      "rank": 11,
+      "instrument": "SZ300347",
+      "name": "泰格医药",
+      "score": 0.034607263291548465,
+      "close": 50.25664520263672
+    },
+    {
+      "rank": 12,
+      "instrument": "SZ300274",
+      "name": "阳光电源",
+      "score": 0.03389568625850435,
+      "close": 71.43834686279297
+    },
+    {
+      "rank": 13,
+      "instrument": "SZ003816",
+      "name": "中国广核",
+      "score": 0.03252008810709016,
+      "close": 4.087906837463379
+    },
+    {
+      "rank": 14,
+      "instrument": "SZ002311",
+      "name": "海大集团",
+      "score": 0.030140411568792182,
+      "close": 27.610633850097656
+    },
+    {
+      "rank": 15,
+      "instrument": "SH601838",
+      "name": "成都银行",
+      "score": 0.029510780123769842,
+      "close": 16.685134887695312
+    },
+    {
+      "rank": 16,
+      "instrument": "SZ300750",
+      "name": "宁德时代",
+      "score": 0.028616631017293843,
+      "close": 422.3150634765625
+    },
+    {
+      "rank": 17,
+      "instrument": "SZ300896",
+      "name": "爱美客",
+      "score": 0.027773941550188377,
+      "close": 54.743560791015625
+    },
+    {
+      "rank": 18,
+      "instrument": "SH600741",
+      "name": "华域汽车",
+      "score": 0.025837388787489972,
+      "close": 23.976411819458008
+    },
+    {
+      "rank": 19,
+      "instrument": "SH600015",
+      "name": "华夏银行",
+      "score": 0.023670834202895154,
+      "close": 7.271425247192383
+    },
+    {
+      "rank": 20,
+      "instrument": "SZ300760",
+      "name": "迈瑞医疗",
+      "score": 0.02352478861131141,
+      "close": 122.27228546142578
+    }
+  ],
+  "strategy": {
+    "buys": [
+      {
+        "instrument": "SZ002384",
+        "name": "东山精密"
+      },
+      {
+        "instrument": "SZ000002",
+        "name": "万科A"
+      },
+      {
+        "instrument": "SZ002714",
+        "name": "牧原股份"
+      },
+      {
+        "instrument": "SH600048",
+        "name": "保利发展"
+      },
+      {
+        "instrument": "SH605499",
+        "name": "东鹏饮料"
+      },
+      {
+        "instrument": "SH600027",
+        "name": "华电国际"
+      },
+      {
+        "instrument": "SZ002459",
+        "name": "晶澳科技"
+      },
+      {
+        "instrument": "SH688256",
+        "name": "寒武纪"
+      },
+      {
+        "instrument": "SH600438",
+        "name": "通威股份"
+      },
+      {
+        "instrument": "SZ002648",
+        "name": "卫星化学"
+      },
+      {
+        "instrument": "SZ300347",
+        "name": "泰格医药"
+      },
+      {
+        "instrument": "SZ300274",
+        "name": "阳光电源"
+      },
+      {
+        "instrument": "SZ003816",
+        "name": "中国广核"
+      },
+      {
+        "instrument": "SZ002311",
+        "name": "海大集团"
+      },
+      {
+        "instrument": "SH601838",
+        "name": "成都银行"
+      },
+      {
+        "instrument": "SZ300750",
+        "name": "宁德时代"
+      },
+      {
+        "instrument": "SZ300896",
+        "name": "爱美客"
+      },
+      {
+        "instrument": "SH600741",
+        "name": "华域汽车"
+      },
+      {
+        "instrument": "SH600015",
+        "name": "华夏银行"
+      },
+      {
+        "instrument": "SZ300760",
+        "name": "迈瑞医疗"
+      }
+    ],
+    "sells": [],
+    "holds": [],
+    "target_portfolio": [
+      {
+        "instrument": "SZ002384",
+        "name": "东山精密"
+      },
+      {
+        "instrument": "SZ000002",
+        "name": "万科A"
+      },
+      {
+        "instrument": "SZ002714",
+        "name": "牧原股份"
+      },
+      {
+        "instrument": "SH600048",
+        "name": "保利发展"
+      },
+      {
+        "instrument": "SH605499",
+        "name": "东鹏饮料"
+      },
+      {
+        "instrument": "SH600027",
+        "name": "华电国际"
+      },
+      {
+        "instrument": "SZ002459",
+        "name": "晶澳科技"
+      },
+      {
+        "instrument": "SH688256",
+        "name": "寒武纪"
+      },
+      {
+        "instrument": "SH600438",
+        "name": "通威股份"
+      },
+      {
+        "instrument": "SZ002648",
+        "name": "卫星化学"
+      },
+      {
+        "instrument": "SZ300347",
+        "name": "泰格医药"
+      },
+      {
+        "instrument": "SZ300274",
+        "name": "阳光电源"
+      },
+      {
+        "instrument": "SZ003816",
+        "name": "中国广核"
+      },
+      {
+        "instrument": "SZ002311",
+        "name": "海大集团"
+      },
+      {
+        "instrument": "SH601838",
+        "name": "成都银行"
+      },
+      {
+        "instrument": "SZ300750",
+        "name": "宁德时代"
+      },
+      {
+        "instrument": "SZ300896",
+        "name": "爱美客"
+      },
+      {
+        "instrument": "SH600741",
+        "name": "华域汽车"
+      },
+      {
+        "instrument": "SH600015",
+        "name": "华夏银行"
+      },
+      {
+        "instrument": "SZ300760",
+        "name": "迈瑞医疗"
+      }
+    ]
+  },
+  "total_instruments_scored": 300,
+  "stock_name_map_path": "/root/projects/qlib/examples/local_stock_names.json"
+}
