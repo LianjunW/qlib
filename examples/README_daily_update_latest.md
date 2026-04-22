@@ -26,6 +26,39 @@ This avoids two common problems:
 - baostock normalized csv:
   `scripts/data_collector/baostock/normalize`
 
+## One-shot script (data update → score)
+
+`examples/baostock_daily_update_full_pipeline.py` runs the same flow as **§2–§5** below in one command: baostock incremental `update_data_to_bin` (CSI300 scope) → build a **dynamic** prediction-union file `instruments/csi300_score_union_latest.txt` (last `day.txt` minus 120 days, matching `daily_update_and_score.py`) → `rewrite_scope_bins_from_normalize` for that union → call `daily_update_and_score.run_pipeline` and write `examples/daily_report/<date>.json`.
+
+Run from the **repository root** (paths to `source` / `normalize` are relative):
+
+```bash
+/root/projects/qlib/.venv/bin/python examples/baostock_daily_update_full_pipeline.py
+```
+
+Common options:
+
+| Flag | Meaning |
+|------|---------|
+| `--skip-collector` | Skip §2 download/normalize/dump; run union + tail rewrite + score only. |
+| `--skip-tail-rewrite` | Skip bin tail rewrite from normalize (only if you are sure §4 is unnecessary). |
+| `--skip-score` | Stop after data steps (no JSON report). |
+| `--dry-run-score` | Run scoring and print the report; do not save JSON. |
+| `--qlib-data-dir PATH` | Override default `~/.qlib/qlib_data/cn_data`. |
+| `--refresh-stock-name-map` | Refresh `examples/local_stock_names.json` via baostock before scoring. |
+
+Options passed through to scoring (same as `daily_update_and_score.py`): `--recorder-id`, `--experiment-name`, `--topk`, `--n-drop`, `--output-dir`, `--score-date`, `--stock-name-map`.
+
+Example: refresh names and write report to a custom directory:
+
+```bash
+/root/projects/qlib/.venv/bin/python examples/baostock_daily_update_full_pipeline.py \
+  --refresh-stock-name-map \
+  --output-dir /root/projects/qlib/examples/daily_report
+```
+
+The manual steps in §2–§5 remain useful when you need fixed-date reproducibility (e.g. `csi300_score_union_20251218_20260417`) or to compare against an official baseline.
+
 ## 1. Prepare official baseline once
 
 Download and unpack the official release into a persistent project directory:
