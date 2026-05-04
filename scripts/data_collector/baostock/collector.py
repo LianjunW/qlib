@@ -4,9 +4,12 @@
 import sys
 import copy
 import datetime
+import errno
 import json
 import multiprocessing
+import random
 import shutil
+import time
 from pathlib import Path
 from typing import Iterable, List, Optional
 
@@ -28,6 +31,96 @@ sys.path.append(str(CUR_DIR.parent.parent))
 from dump_bin import DumpDataUpdate
 from data_collector.base import BaseCollector, BaseNormalize, BaseRun, Normalize
 from data_collector.utils import get_calendar_list, get_hs_stock_symbols, get_instruments, symbol_suffix_to_prefix
+
+# -----------------------------------------------------------------------------
+# Baostock remote calls often fail transiently (timeouts, resets). Retry with
+# exponential backoff instead of failing the whole daily update on first error.
+# -----------------------------------------------------------------------------
+BAOSTOCK_RETRY_ATTEMPTS = 6
+BAOSTOCK_RETRY_BASE_SEC = 1.0
+BAOSTOCK_RETRY_MAX_SEC = 90.0
+
+_NET_ERRNOS = frozenset(
+    e
+    for e in (
+        getattr(errno, name, None)
+        for name in (
+            "ECONNRESET",
+            "ECONNREFUSED",
+            "ETIMEDOUT",
+            "EPIPE",
+            "EHOSTUNREACH",
+            "ENETUNREACH",
+            "ENOTCONN",
+            "EAI_AGAIN",
+        )
+    )
+    if e is not None
+)
+
+
+def _baostock_retry_delay(attempt_index: int) -> None:
+    """Sleep after attempt ``attempt_index`` failed (0-based)."""
+    sec = min(BAOSTOCK_RETRY_MAX_SEC, BAOSTOCK_RETRY_BASE_SEC * (2**attempt_index))
+    sec += random.uniform(0, min(4.0, 0.2 * sec))
+    time.sleep(sec)
+
+
+def _baostock_transient_exc(exc: BaseException) -> bool:
+    if isinstance(exc, (BrokenPipeError, ConnectionError, TimeoutError, InterruptedError)):
+        return True
+    if isinstance(exc, OSError):
+        en = getattr(exc, "errno", None)
+        if en is not None and (en in _NET_ERRNOS or en == errno.EAGAIN):
+            return True
+    msg_raw = str(exc)
+    msg = msg_raw.lower()
+    if any(x in msg_raw for x in ("网络", "超时", "连接失败", "断开")):
+        return True
+    return any(
+        x in msg
+        for x in (
+            "timeout",
+            "timed out",
+            "connection reset",
+            "broken pipe",
+            "network is unreachable",
+            "connection aborted",
+            "remotedisconnected",
+            "temporarily unavailable",
+            "eof occurred",
+        )
+    )
+
+
+def bs_login_with_retry():
+    """Login with retries; returns baostock login result object (check ``error_code``)."""
+    last_lg = None
+    for attempt in range(BAOSTOCK_RETRY_ATTEMPTS):
+        try:
+            last_lg = bs.login()
+        except Exception as e:
+            last_lg = None
+            if attempt == BAOSTOCK_RETRY_ATTEMPTS - 1:
+                raise
+            if not _baostock_transient_exc(e):
+                raise
+            logger.warning(f"baostock.login raised ({attempt + 1}/{BAOSTOCK_RETRY_ATTEMPTS}): {e}")
+            _baostock_retry_delay(attempt)
+            continue
+        if getattr(last_lg, "error_code", None) == "0":
+            return last_lg
+        msg = getattr(last_lg, "error_msg", "") or ""
+        logger.warning(f"baostock.login failed ({attempt + 1}/{BAOSTOCK_RETRY_ATTEMPTS}): {msg}")
+        try:
+            bs.logout()
+        except Exception:
+            pass
+        if attempt == BAOSTOCK_RETRY_ATTEMPTS - 1:
+            return last_lg
+        _baostock_retry_delay(attempt)
+    return last_lg
+
 
 # Earliest CSI300 coverage for qlib instrument segment (flat membership file only).
 CSI300_INSTRUMENT_START = "2005-04-08"
@@ -54,18 +147,34 @@ def baostock_hs_code_to_qlib(bs_code: str) -> str:
 
 def query_hs300_symbols_baostock(trade_date: str) -> List[str]:
     """Return sorted unique qlib symbols for CSI300 (沪深300) on *trade_date* (YYYY-MM-DD)."""
-    rs = bs.query_hs300_stocks(date=trade_date)
-    if rs.error_code != "0":
-        logger.warning(f"query_hs300_stocks({trade_date}): {rs.error_msg}")
-        return []
-    out: List[str] = []
-    while rs.error_code == "0" and rs.next():
-        row = rs.get_row_data()
-        if len(row) > 1:
-            q = baostock_hs_code_to_qlib(row[1])
-            if q:
-                out.append(q)
-    return sorted(set(out))
+    for attempt in range(BAOSTOCK_RETRY_ATTEMPTS):
+        try:
+            rs = bs.query_hs300_stocks(date=trade_date)
+            if rs.error_code != "0":
+                msg = rs.error_msg
+                logger.warning(
+                    f"query_hs300_stocks({trade_date}) attempt {attempt + 1}/{BAOSTOCK_RETRY_ATTEMPTS}: {msg}"
+                )
+                if attempt == BAOSTOCK_RETRY_ATTEMPTS - 1:
+                    return []
+                _baostock_retry_delay(attempt)
+                continue
+            out: List[str] = []
+            while rs.error_code == "0" and rs.next():
+                row = rs.get_row_data()
+                if len(row) > 1:
+                    q = baostock_hs_code_to_qlib(row[1])
+                    if q:
+                        out.append(q)
+            return sorted(set(out))
+        except Exception as e:
+            logger.warning(
+                f"query_hs300_stocks({trade_date}) attempt {attempt + 1}/{BAOSTOCK_RETRY_ATTEMPTS} raised: {e}"
+            )
+            if attempt == BAOSTOCK_RETRY_ATTEMPTS - 1:
+                return []
+            _baostock_retry_delay(attempt)
+    return []
 
 
 def infer_latest_trade_date_from_source_dir(source_dir: [str, Path], instrument_scope_file: Optional[Path] = None) -> Optional[str]:
@@ -106,6 +215,93 @@ def infer_latest_trade_date_from_source_dir(source_dir: [str, Path], instrument_
     return latest.strftime("%Y-%m-%d") if latest is not None else None
 
 
+def query_latest_trading_day_cn_baostock(
+    start_back_days: int = 420,
+    end_forward_days: int = 14,
+) -> Optional[str]:
+    """
+    Latest CN stock exchange trading day for daily (1d) bars, from baostock ``query_trade_dates``.
+
+    The window is ``[today - start_back_days, today + end_forward_days]`` (calendar days on the
+    baostock side). Use this as the authoritative "data calendar through" hint before/after
+    incremental updates when you want the exchange calendar instead of local clock ``+1 day``.
+    """
+    today = pd.Timestamp.now().normalize()
+    start = (today - pd.Timedelta(days=int(start_back_days))).strftime("%Y-%m-%d")
+    end = (today + pd.Timedelta(days=int(end_forward_days))).strftime("%Y-%m-%d")
+    try:
+        lg = bs_login_with_retry()
+    except Exception as e:
+        logger.error(f"baostock.login raised: {e}")
+        return None
+    if lg.error_code != "0":
+        logger.error(f"baostock.login failed: {lg.error_msg}")
+        return None
+    try:
+        rs = None
+        for attempt in range(BAOSTOCK_RETRY_ATTEMPTS):
+            try:
+                rs = bs.query_trade_dates(start_date=start, end_date=end)
+                if rs.error_code != "0":
+                    msg = rs.error_msg
+                    logger.warning(f"query_trade_dates attempt {attempt + 1}/{BAOSTOCK_RETRY_ATTEMPTS}: {msg}")
+                    if attempt == BAOSTOCK_RETRY_ATTEMPTS - 1:
+                        logger.error(f"query_trade_dates failed: {msg}")
+                        return None
+                    _baostock_retry_delay(attempt)
+                    continue
+                break
+            except Exception as e:
+                logger.warning(f"query_trade_dates attempt {attempt + 1}/{BAOSTOCK_RETRY_ATTEMPTS} raised: {e}")
+                if attempt == BAOSTOCK_RETRY_ATTEMPTS - 1:
+                    logger.error(f"query_trade_dates raised: {e}")
+                    return None
+                _baostock_retry_delay(attempt)
+        if rs is None or rs.error_code != "0":
+            return None
+        rows: List = []
+        while rs.error_code == "0" and rs.next():
+            rows.append(rs.get_row_data())
+        if not rows:
+            logger.error("query_trade_dates returned no rows")
+            return None
+        cal = pd.DataFrame(rows, columns=rs.fields)
+        if "calendar_date" not in cal.columns or "is_trading_day" not in cal.columns:
+            logger.error(f"query_trade_dates unexpected fields: {list(cal.columns)}")
+            return None
+        flag = cal["is_trading_day"]
+        if flag.dtype == object or getattr(flag.dtype, "name", "") == "string":
+            mask = flag.astype(str).str.strip().isin(("1", "1.0"))
+        else:
+            mask = pd.to_numeric(flag, errors="coerce").fillna(0).astype(int) == 1
+        dates = pd.to_datetime(cal.loc[mask, "calendar_date"], errors="coerce").dropna()
+        if dates.empty:
+            return None
+        return pd.Timestamp(dates.max()).strftime("%Y-%m-%d")
+    finally:
+        try:
+            bs.logout()
+        except Exception:
+            pass
+
+
+def resolve_local_csi300_scope_fallback(qlib_data_1d_dir: str) -> Optional[str]:
+    """
+    Prefer an existing baostock snapshot scope, otherwise fall back to historical ``csi300``.
+
+    This is used when baostock is temporarily unavailable but local instrument files already
+    exist and can keep the pipeline moving in a best-effort mode.
+    """
+    inst_dir = Path(qlib_data_1d_dir).expanduser().resolve().joinpath("instruments")
+    snapshot = inst_dir.joinpath(f"{CSI300_BAOSTOCK_SNAPSHOT_SCOPE}.txt")
+    if snapshot.exists() and snapshot.stat().st_size > 0:
+        return CSI300_BAOSTOCK_SNAPSHOT_SCOPE
+    csi300 = inst_dir.joinpath("csi300.txt")
+    if csi300.exists() and csi300.stat().st_size > 0:
+        return "csi300"
+    return None
+
+
 class BaostockCollectorCN1d(BaseCollector):
     """A-share daily collector. Index codes are optional (see include_index_symbols)."""
 
@@ -142,7 +338,14 @@ class BaostockCollectorCN1d(BaseCollector):
         """
         if interval != self.INTERVAL_1d:
             raise ValueError(f"Baostock daily collector only supports interval={self.INTERVAL_1d}")
-        bs.login()
+        try:
+            lg = bs_login_with_retry()
+        except Exception as e:
+            raise RuntimeError(f"baostock.login failed during collector init: {e}") from e
+        if getattr(lg, "error_code", None) != "0":
+            raise RuntimeError(
+                f"baostock.login failed during collector init: {getattr(lg, 'error_msg', 'unknown error')}"
+            )
         self.adjustflag = str(adjustflag)
         self.qlib_data_1d_dir = (
             str(Path(qlib_data_1d_dir).expanduser().resolve()) if qlib_data_1d_dir is not None else None
@@ -256,16 +459,37 @@ class BaostockCollectorCN1d(BaseCollector):
         adjustflag: str,
         fields: str,
     ) -> pd.DataFrame:
-        rs = bs.query_history_k_data_plus(
-            symbol,
-            fields,
-            start_date=str(start_datetime.strftime("%Y-%m-%d")),
-            end_date=str(end_datetime.strftime("%Y-%m-%d")),
-            frequency=cls.process_interval(interval=interval)["interval"],
-            adjustflag=str(adjustflag),
-        )
-        if rs.error_code == "0" and len(rs.data) > 0:
-            return pd.DataFrame(rs.data, columns=rs.fields)
+        freq = cls.process_interval(interval=interval)["interval"]
+        start_s = str(start_datetime.strftime("%Y-%m-%d"))
+        end_s = str(end_datetime.strftime("%Y-%m-%d"))
+        adj = str(adjustflag)
+        for attempt in range(BAOSTOCK_RETRY_ATTEMPTS):
+            try:
+                rs = bs.query_history_k_data_plus(
+                    symbol,
+                    fields,
+                    start_date=start_s,
+                    end_date=end_s,
+                    frequency=freq,
+                    adjustflag=adj,
+                )
+            except Exception as e:
+                logger.warning(
+                    f"query_history_k_data_plus({symbol}) attempt {attempt + 1}/{BAOSTOCK_RETRY_ATTEMPTS}: {e}"
+                )
+                if attempt == BAOSTOCK_RETRY_ATTEMPTS - 1:
+                    return pd.DataFrame()
+                _baostock_retry_delay(attempt)
+                continue
+            if rs.error_code == "0":
+                if len(rs.data) > 0:
+                    return pd.DataFrame(rs.data, columns=rs.fields)
+                return pd.DataFrame()
+            msg = rs.error_msg
+            logger.warning(f"query_history_k_data_plus({symbol}) attempt {attempt + 1}/{BAOSTOCK_RETRY_ATTEMPTS}: {msg}")
+            if attempt == BAOSTOCK_RETRY_ATTEMPTS - 1:
+                return pd.DataFrame()
+            _baostock_retry_delay(attempt)
         return pd.DataFrame()
 
     def get_data(
@@ -645,6 +869,16 @@ class Run(BaseRun):
     def default_base_dir(self) -> [Path, str]:
         return CUR_DIR
 
+    def print_latest_cn_trade_date_baostock(self, start_back_days: int = 420, end_forward_days: int = 14) -> str:
+        """CLI helper: print the last CN trading day (1d) from baostock ``query_trade_dates``."""
+        d = query_latest_trading_day_cn_baostock(
+            start_back_days=int(start_back_days), end_forward_days=int(end_forward_days)
+        )
+        if d is None:
+            raise RuntimeError("Could not resolve latest CN trade date from baostock (login or empty calendar).")
+        print(d, flush=True)
+        return d
+
     def download_data(
         self,
         max_collector_count=2,
@@ -816,11 +1050,21 @@ class Run(BaseRun):
         # Generate a separate baostock snapshot scope for recent-date predictions instead of
         # overwriting the historical csi300.txt file.
         if refresh_csi300_instruments_baostock and scope == "csi300":
-            effective_scope = self.update_csi300_instruments_from_baostock(qlib_data_1d_dir=qlib_data_1d_dir)
-            logger.warning(
-                f"using baostock snapshot scope={effective_scope} for this run; "
-                "historical csi300.txt was kept unchanged"
-            )
+            try:
+                effective_scope = self.update_csi300_instruments_from_baostock(qlib_data_1d_dir=qlib_data_1d_dir)
+                logger.warning(
+                    f"using baostock snapshot scope={effective_scope} for this run; "
+                    "historical csi300.txt was kept unchanged"
+                )
+            except Exception as e:
+                fallback_scope = resolve_local_csi300_scope_fallback(qlib_data_1d_dir)
+                if fallback_scope is None:
+                    raise
+                effective_scope = fallback_scope
+                logger.warning(
+                    "failed to refresh CSI300 baostock snapshot; "
+                    f"falling back to existing local scope={effective_scope}: {e}"
+                )
 
         if repair_instruments_end_by_bin:
             try:
@@ -1193,7 +1437,12 @@ class Run(BaseRun):
             )
             as_of_date = source_latest or cal_lines[-1]
 
-        bs.login()
+        try:
+            login_result = bs_login_with_retry()
+        except Exception as e:
+            raise RuntimeError(f"baostock.login failed: {e}") from e
+        if getattr(login_result, "error_code", None) != "0":
+            raise RuntimeError(f"baostock.login failed: {getattr(login_result, 'error_msg', 'unknown error')}")
         try:
             symbols = query_hs300_symbols_baostock(as_of_date)
             if not symbols:
@@ -1204,7 +1453,10 @@ class Run(BaseRun):
                         as_of_date = d
                         break
         finally:
-            bs.logout()
+            try:
+                bs.logout()
+            except Exception:
+                pass
 
         if not symbols:
             raise ValueError(

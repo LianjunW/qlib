@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Daily scoring pipeline.
+Daily scoring only.
 
-Workflow:
+This script does **not** update qlib daily data. It assumes the provider directory
+already contains the latest usable bars/features, then:
+
   1. Load the trained model from a qlib recorder
-  2. Generate predictions for the latest trading date
+  2. Run fresh inference for the latest/scoped trading date
   3. Output top-K stock scores with stock names and strategy recommendations
   4. Save a daily report (JSON + console)
+
+For the unified "latest daily update + score" workflow, use:
+
+  python examples/baostock_daily_update_full_pipeline.py
 
 Usage:
   python examples/daily_update_and_score.py
@@ -95,7 +101,10 @@ def refresh_stock_name_map_via_baostock(map_path: Optional[str] = None) -> Dict[
     resolved = os.path.abspath(os.path.expanduser(map_path or DEFAULT_STOCK_NAME_MAP_PATH))
     existing_map = load_stock_name_map(resolved)
 
-    login_result = bs.login()
+    try:
+        login_result = bs.login()
+    except Exception as e:
+        raise RuntimeError(f"baostock login failed: {e}") from e
     if login_result.error_code != "0":
         raise RuntimeError(f"baostock login failed: {login_result.error_msg}")
 
@@ -115,7 +124,10 @@ def refresh_stock_name_map_via_baostock(map_path: Optional[str] = None) -> Dict[
                 continue
             baostock_map[symbol] = name
     finally:
-        bs.logout()
+        try:
+            bs.logout()
+        except Exception:
+            pass
 
     merged_map = dict(existing_map)
     merged_map.update(baostock_map)
@@ -402,23 +414,25 @@ def format_report(
     lines.append(f"{'Rank':<6}{'Code':<12}{'Name':<16}{'Score':<12}{'Close':<12}")
     lines.append("-" * 58)
 
+    all_scores = []
     top_scores = []
-    for rank, (inst, row) in enumerate(scores.head(topk).iterrows(), 1):
+    for rank, (inst, row) in enumerate(scores.iterrows(), 1):
         inst_str = str(inst)
         score_val = float(row["score"])
         price_val = prices.get(inst, float('nan'))
         price_str = f"{price_val:.2f}" if pd.notna(price_val) else "N/A"
         name = stock_name_map.get(inst_str, "-")
-        lines.append(f"{rank:<6}{inst_str:<12}{name:<16}{score_val:<12.6f}{price_str:<12}")
-        top_scores.append(
-            {
-                "rank": rank,
-                "instrument": inst_str,
-                "name": None if name == "-" else name,
-                "score": score_val,
-                "close": float(price_val) if pd.notna(price_val) else None,
-            }
-        )
+        score_item = {
+            "rank": rank,
+            "instrument": inst_str,
+            "name": None if name == "-" else name,
+            "score": score_val,
+            "close": float(price_val) if pd.notna(price_val) else None,
+        }
+        all_scores.append(score_item)
+        if rank <= topk:
+            lines.append(f"{rank:<6}{inst_str:<12}{name:<16}{score_val:<12.6f}{price_str:<12}")
+            top_scores.append(score_item)
 
     lines.append(f"\nStrategy Recommendations (topk={topk}):")
     if recommendations["buys"]:
@@ -447,6 +461,7 @@ def format_report(
         "market_signal_description": recommendations["market_signal_description"],
         "score_stats": {k: float(v) for k, v in stats.items()},
         "top_scores": top_scores,
+        "all_scores": all_scores,
         "strategy": {
             "buys": [
                 {"instrument": str(s), "name": stock_name_map.get(str(s).upper())}
@@ -551,7 +566,7 @@ def run_pipeline(
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Daily scoring pipeline based on a trained qlib recorder.",
+        description="Daily scoring only, based on a trained qlib recorder.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -568,13 +583,13 @@ def parse_args():
     parser.add_argument(
         "--qlib-data-dir",
         default=None,
-        help="Qlib data directory (default: ~/.qlib/qlib_data/cn_data).",
+        help="Qlib data directory with already-updated daily data (default: ~/.qlib/qlib_data/cn_data).",
     )
     parser.add_argument(
         "--score-date",
         default=None,
         metavar="YYYY-MM-DD",
-        help="Generate a daily report for the specified date. If that date is unavailable, fallback to the nearest earlier prediction date.",
+        help="Generate a daily report for the specified date. If unavailable, fallback to the nearest earlier prediction date.",
     )
     parser.add_argument(
         "--stock-name-map",

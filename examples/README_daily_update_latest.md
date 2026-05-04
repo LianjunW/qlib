@@ -8,12 +8,49 @@ Use:
 
 - official `qlib_bin` as the long-history baseline
 - baostock as the recent daily updater
-- `examples/daily_update_and_score.py` for latest score generation
+- `examples/baostock_daily_update_full_pipeline.py` as the unified entrypoint for latest update + score
+- `examples/daily_update_and_score.py` only for the final scoring stage when data is already fresh
 
 This avoids two common problems:
 
 - only updating the latest CSI300 snapshot instead of the whole prediction-union scope
 - corrupting recent feature-bin tails when incrementally appending symbols that were skipped in earlier updates
+
+## Latest score snapshot
+
+**Baostock 日线日历（最新交易日）**：在仓库根目录执行：
+
+```bash
+python scripts/data_collector/baostock/collector.py print_latest_cn_trade_date_baostock
+```
+
+**刷新下面表格**：根据 baostock 返回的最后一个交易日，在 `examples/daily_report/` 中选取日期不晚于该日的最新 `YYYY-MM-DD.json`，并重写本节的标记区。
+
+```bash
+python examples/refresh_readme_daily_latest_snapshot.py
+```
+
+`examples/baostock_daily_update_full_pipeline.py` 在未指定 `--score-date` 时，会用 `min(day.txt 末行, baostock 最新交易日)` 作为打分日；增量更新会把 `--end_date` 设为「baostock 最新交易日 + 1 天」（左开右开区间上界）。可加 `--refresh-readme-snapshot` 在打分结束后自动执行上述刷新脚本。
+
+<!-- DAILY_SCORE_SNAPSHOT_BEGIN -->
+
+_(Generated from `examples/daily_report/2026-04-21.json`; refresh with `examples/refresh_readme_daily_latest_snapshot.py`.)_
+
+Saved report: `examples/daily_report/2026-04-21.json` (generated `2026-04-24T10:04:59.316503`).
+
+| Item | Value |
+|------|-------|
+| Score date | 2026-04-21 |
+| Instruments scored | 300 |
+| Market signal | NEUTRAL — Low score spread, limited alpha opportunities |
+| Mean / median score | -0.0158 / -0.0164 |
+| Top-K mean / bottom-K mean | 0.0172 / -0.0443 |
+| Spread (top − bottom) | 0.0615 |
+
+Top 5 by model score: SH600547 山东黄金 (0.0423), SZ300759 康龙化成 (0.0326), SH688506 百利天恒 (0.0278), SZ300433 蓝思科技 (0.0258), SZ000807 云铝股份 (0.0250).
+
+<!-- DAILY_SCORE_SNAPSHOT_END -->
+
 
 ## Recommended layout
 
@@ -28,13 +65,13 @@ This avoids two common problems:
 
 ## One-shot script (data update → score)
 
-`examples/baostock_daily_update_full_pipeline.py` runs the same flow as **§2–§5** below in one command: baostock incremental `update_data_to_bin` (CSI300 scope) → build a **dynamic** prediction-union file `instruments/csi300_score_union_latest.txt` (last `day.txt` minus 120 days, matching `daily_update_and_score.py`) → `rewrite_scope_bins_from_normalize` for that union → call `daily_update_and_score.run_pipeline` and write `examples/daily_report/<date>.json`.
-
-Run from the **repository root** (paths to `source` / `normalize` are relative):
+If your goal is simply "run one command to update the latest日线数据并打分", use this entrypoint first:
 
 ```bash
 /root/projects/qlib/.venv/bin/python examples/baostock_daily_update_full_pipeline.py
 ```
+
+`examples/baostock_daily_update_full_pipeline.py` runs the same flow as **§2–§5** below in one command: baostock incremental `update_data_to_bin` (CSI300 scope) → build a **dynamic** prediction-union file `instruments/csi300_score_union_latest.txt` (last `day.txt` minus 120 days, matching `daily_update_and_score.py`) → `rewrite_scope_bins_from_normalize` for that union → call `daily_update_and_score.run_pipeline` and write `examples/daily_report/<date>.json`.
 
 Common options:
 
@@ -46,6 +83,7 @@ Common options:
 | `--dry-run-score` | Run scoring and print the report; do not save JSON. |
 | `--qlib-data-dir PATH` | Override default `~/.qlib/qlib_data/cn_data`. |
 | `--refresh-stock-name-map` | Refresh `examples/local_stock_names.json` via baostock before scoring. |
+| `--data-through-date YYYY-MM-DD` | Skip Baostock `query_trade_dates`; set incremental upper bound so bars through that calendar day are requested (`end_date` open = next day). When scoring without `--score-date`, caps the default score day at this date (no extra Baostock calendar call). |
 
 Options passed through to scoring (same as `daily_update_and_score.py`): `--recorder-id`, `--experiment-name`, `--topk`, `--n-drop`, `--output-dir`, `--score-date`, `--stock-name-map`.
 
@@ -167,7 +205,7 @@ What this fixes:
 ## 5. Run score
 
 ```bash
-/root/projects/qlib/.venv/bin/python examples/daily_update_and_score.py --score-date 2026-04-17
+/root/projects/qlib/.venv/bin/python examples/daily_update_and_score.py --score-date 2026-04-21
 ```
 
 Or let the script use the latest date in `day.txt`:
@@ -205,4 +243,6 @@ Verified result from this workflow:
 
 - `rewrite_scope_bins_from_normalize` is intended for recent-tail repair on top of an official qlib baseline.
 - Do not use recent `normalize/*.csv` to fully replace long-history bins unless those csv files themselves contain full history.
+- The active qlib directory can always be restored from the official baseline with the `rsync` command above.
+ history.
 - The active qlib directory can always be restored from the official baseline with the `rsync` command above.
