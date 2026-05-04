@@ -71,6 +71,12 @@ If your goal is simply "run one command to update the latest日线数据并打�
 /root/projects/qlib/.venv/bin/python examples/baostock_daily_update_full_pipeline.py
 ```
 
+Equivalent thin wrapper (same flags):
+
+```bash
+python examples/update_latest_data_and_score.py
+```
+
 `examples/baostock_daily_update_full_pipeline.py` runs the same flow as **§2–§5** below in one command: baostock incremental `update_data_to_bin` (CSI300 scope) → build a **dynamic** prediction-union file `instruments/csi300_score_union_latest.txt` (last `day.txt` minus 120 days, matching `daily_update_and_score.py`) → `rewrite_scope_bins_from_normalize` for that union → call `daily_update_and_score.run_pipeline` and write `examples/daily_report/<date>.json`.
 
 Common options:
