@@ -280,3 +280,90 @@ train ──→ pred.pkl ──┬──→ backtest  （Qlib 原生，快速风
 
 predict ──→ new pred.pkl ──→ backtest / bridge（新时间段）
 ```
+
+---
+
+## Research TODO：提升 IC / TopK / Top1 能力
+
+当前 `workflow_by_code_v2.py` 的 GBDT + Alpha158 更适合作为横截面排序信号，而不是涨跌二分类器。后续优化应优先提升 RankIC、TopK 头部排序稳定性，以及单票交易场景下的 Top1 命中质量。
+
+### 当前开发进度
+
+- 2026-05-05：新增 `examples/workflow_signal_diagnostics.py`，用于读取已有 qlib recorder，统一输出回测口径、IC/RankIC、TopK、Top1、score 分位数、年份拆解和 Top1 score-gap 过滤诊断。该脚本不重训模型，也不重跑回测。
+- 已验证命令：
+
+```bash
+.venv/bin/python examples/workflow_signal_diagnostics.py \
+  --recorder-id 45ee81fb4f68405eb91ffbac7f18573f \
+  --experiment workflow \
+  --start 2024-01-01 \
+  --end 2026-04-10
+```
+
+- 当前 recorder `workflow/45ee81fb4f68405eb91ffbac7f18573f` 在 `2024-01-02 ~ 2026-04-10` 的诊断结果：
+  - 预测覆盖：`189064` 条，`348` 只股票
+  - Daily IC mean / IR：`0.017116 / 0.1117`
+  - Daily RankIC mean / IR：`0.007023 / 0.0447`
+  - RankIC 为正天数比例：`50.55%`
+  - AUC(`label > 0`)：`0.5099`
+  - 组合累计收益 / 年化收益：`116.75% / 42.72%`
+  - 含成本超额年化 / 最大回撤：`24.03% / -16.56%`
+  - Top20 平均收益 / Top-Bottom spread：`0.1883% / 0.1751%`
+  - Top20 跑赢全池 / 跑赢 Bottom20 天数比例：`54.38% / 54.74%`
+  - Top20 简单信号路径年化 / 最大回撤：`53.53% / -19.99%`
+  - Top1 平均收益 / 中位收益：`0.3305% / -0.1390%`
+  - Top1 正收益天数比例：`48.18%`
+  - Top1 日换手：`81.02%`
+  - Top1 简单信号路径年化 / 最大回撤：`96.30% / -39.67%`
+  - Top1 `score_gap_2` p70 过滤覆盖率 / 平均收益 / 正收益天数比例：`30.11% / 0.6555% / 52.12%`
+  - Top1 `score_gap_2` p90 过滤后表现转差：覆盖率 `10.04%`，平均收益 `-0.1732%`
+  - 年份拆解 RankIC：2024 `0.006189`，2025 `0.005988`，2026 `0.014220`
+
+说明：`workflow_signal_diagnostics.py` 中的 TopK/Top1 `path_ann` 和 `path_mdd` 是基于 `label` 的简单等权信号路径估算，用于比较信号形态；它不是 `PortAnaRecord` 或 Backtrader 的真实交易回测，不包含换手成本、涨跌停、停牌、整手和现金约束。
+
+### 1. 建立回归与验证框架
+
+- [x] 固定 recorder、回测区间和交易成本，建立第一版可重复 benchmark 诊断入口。
+- [x] 区分组合绝对收益、基准收益、超额收益，避免把 `report_normal_1day.pkl` 反推的组合收益和 `port_analysis_1day.pkl` 的超额收益混用。
+- [ ] 增加 walk-forward 验证：滚动训练、验证、测试，避免只看单一区间。
+- [x] 增加基础 IC、RankIC、TopK spread、Top1 指标的一键诊断。
+- [x] 按年份拆解 IC、RankIC、TopK spread。
+- [ ] 按牛/熊/震荡市场、行业、市值、波动率分组拆解 IC、RankIC、TopK spread。
+- [ ] 做交易成本和滑点敏感性测试：万一、万三、万五，以及不同最低手续费。
+- [ ] 做 TopK / `n_drop` / `hold_thresh` 网格，观察收益、回撤、换手和稳定性。
+
+### 2. 针对 IC / RankIC 不高的实验
+
+- [ ] 将 label 从绝对未来收益改为相对收益：个股未来收益减 CSI300、行业均值或市值/行业中性收益。
+- [ ] 测试不同预测 horizon：1D、3D、5D、10D forward return，优先观察 RankIC 和 TopK spread。
+- [ ] 将 label 改为每日截面 rank 或 z-score，弱化市场整体涨跌噪声。
+- [ ] 对 label 做 winsorize / 去极值，降低极端收益样本对训练的干扰。
+- [ ] 尝试排序目标：LightGBM `lambdarank`、pairwise ranking，或回归每日 rank-normalized label。
+- [ ] 过滤低质量样本：停牌、成交额过低、涨跌停不可交易、新股上市不足 N 天、复权或 volume 异常。
+- [ ] 检查 Alpha158 因子共线和噪声，删除长期低贡献或不稳定因子。
+
+### 3. TopK 排序能力优化
+
+- [x] 评估 Top5、Top10、Top20、Top30、Top50 的平均未来收益、跑赢全池比例、跑赢 BottomK 比例和换手。
+- [x] 使用分位数组合检查 score 单调性：最高 20% 是否稳定优于最低 20%。
+- [ ] 引入 score spread 过滤：当 TopK 与中位数或 BottomK 的分差不足时减少调仓或降仓。
+- [ ] 对 TopK 做行业、市值、Beta、波动率、流动性约束，验证收益是否仍然存在。
+- [ ] 比较日频调仓、3 日持有、5 日持有，降低换手并观察 TopK spread 是否更稳定。
+
+### 4. 每天最多交易一支股票的 Top1 方向
+
+- [ ] 不直接假设 Top1 可交易；单票策略需要单独验证头部排序精度。
+- [x] 增加 Top1 指标：Top1 平均收益、胜率、跑赢全池、跑赢 Top20 均值、换手率。
+- [x] 检查 Top1 是否落在真实未来收益前 5% / 前 10% 的命中率。
+- [x] 测试 score gap 过滤：只有第一名明显领先第二名或 Top20 均值时才交易，否则空仓。
+- [ ] 增加流动性、涨跌停、停牌、价格异常过滤，避免最高分股票不可执行。
+- [x] 比较 Top1、Top3、Top5、小权重 TopK 的简单信号路径收益/回撤，确认集中持仓是否值得承担风险。
+- [ ] 使用真实交易回测比较 Top1、Top3、Top5、小权重 TopK，纳入换手成本、涨跌停、停牌、整手和现金约束。
+
+### 5. 因子与模型扩展
+
+- [ ] 在验证框架稳定后再扩展因子，避免盲目堆因子导致过拟合。
+- [ ] 优先尝试行业相对强弱、残差动量、流动性冲击、换手率、波动率压缩/放大等与现有 Alpha158 互补的因子。
+- [ ] 如果有可靠数据源，再引入财务、估值、资金流、融资融券、北向资金等中低频因子。
+- [ ] 尝试 ensemble：不同 horizon、不同训练窗口、不同因子子集、不同模型的 rank average。
+- [ ] 对比 GBDT、CatBoost、XGBoost、线性模型和排序模型，重点看 out-of-sample RankIC 和 TopK/Top1 稳定性，而不是只看训练期收益。

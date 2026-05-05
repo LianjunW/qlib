@@ -1,0 +1,2423 @@
+{
+  "date": "2026-04-30",
+  "requested_date": "2026-04-30",
+  "generated_at": "2026-05-05T07:50:52.347673",
+  "experiment_name": "workflow",
+  "recorder_id": "45ee81fb4f68405eb91ffbac7f18573f",
+  "market_signal": "MILDLY_BULLISH",
+  "market_signal_description": "Moderate positive scores, some differentiation among stocks",
+  "score_stats": {
+    "mean": -0.005534603165818469,
+    "median": -0.007433097180923614,
+    "top_k_mean": 0.048688954260100545,
+    "bottom_k_mean": -0.043370406480052054,
+    "spread": 0.0920593607401526
+  },
+  "top_scores": [
+    {
+      "rank": 1,
+      "instrument": "SZ002938",
+      "name": "鹏鼎控股",
+      "score": 0.08582504210302593,
+      "close": null
+    },
+    {
+      "rank": 2,
+      "instrument": "SH600482",
+      "name": "中国动力",
+      "score": 0.06702013130955185,
+      "close": null
+    },
+    {
+      "rank": 3,
+      "instrument": "SZ002463",
+      "name": "沪电股份",
+      "score": 0.06516571938169058,
+      "close": null
+    },
+    {
+      "rank": 4,
+      "instrument": "SZ000807",
+      "name": "云铝股份",
+      "score": 0.062073360595976866,
+      "close": null
+    },
+    {
+      "rank": 5,
+      "instrument": "SH600875",
+      "name": "东方电气",
+      "score": 0.056895171928695795,
+      "close": null
+    },
+    {
+      "rank": 6,
+      "instrument": "SH600547",
+      "name": "山东黄金",
+      "score": 0.05257705026504048,
+      "close": null
+    },
+    {
+      "rank": 7,
+      "instrument": "SZ300782",
+      "name": "卓胜微",
+      "score": 0.05128958402025605,
+      "close": null
+    },
+    {
+      "rank": 8,
+      "instrument": "SZ300502",
+      "name": "新易盛",
+      "score": 0.04951371259627945,
+      "close": null
+    },
+    {
+      "rank": 9,
+      "instrument": "SH600183",
+      "name": "生益科技",
+      "score": 0.04851942325081364,
+      "close": null
+    },
+    {
+      "rank": 10,
+      "instrument": "SH601138",
+      "name": "工业富联",
+      "score": 0.04560155611909325,
+      "close": null
+    },
+    {
+      "rank": 11,
+      "instrument": "SZ300418",
+      "name": "昆仑万维",
+      "score": 0.04523706639337061,
+      "close": null
+    },
+    {
+      "rank": 12,
+      "instrument": "SH600346",
+      "name": "恒力石化",
+      "score": 0.044605694116520656,
+      "close": null
+    },
+    {
+      "rank": 13,
+      "instrument": "SZ002916",
+      "name": "深南电路",
+      "score": 0.043927595050402876,
+      "close": null
+    },
+    {
+      "rank": 14,
+      "instrument": "SZ000975",
+      "name": "山金国际",
+      "score": 0.04378961443455341,
+      "close": null
+    },
+    {
+      "rank": 15,
+      "instrument": "SH600066",
+      "name": "宇通客车",
+      "score": 0.04160293309244404,
+      "close": null
+    },
+    {
+      "rank": 16,
+      "instrument": "SH600522",
+      "name": "中天科技",
+      "score": 0.03620646360049261,
+      "close": null
+    },
+    {
+      "rank": 17,
+      "instrument": "SZ002475",
+      "name": "立讯精密",
+      "score": 0.03581877378195353,
+      "close": null
+    },
+    {
+      "rank": 18,
+      "instrument": "SH600233",
+      "name": "圆通速递",
+      "score": 0.033705044684417866,
+      "close": null
+    },
+    {
+      "rank": 19,
+      "instrument": "SZ000596",
+      "name": "古井贡酒",
+      "score": 0.03262068743451711,
+      "close": null
+    },
+    {
+      "rank": 20,
+      "instrument": "SH603993",
+      "name": "洛阳钼业",
+      "score": 0.03178446104291446,
+      "close": null
+    }
+  ],
+  "all_scores": [
+    {
+      "rank": 1,
+      "instrument": "SZ002938",
+      "name": "鹏鼎控股",
+      "score": 0.08582504210302593,
+      "close": null
+    },
+    {
+      "rank": 2,
+      "instrument": "SH600482",
+      "name": "中国动力",
+      "score": 0.06702013130955185,
+      "close": null
+    },
+    {
+      "rank": 3,
+      "instrument": "SZ002463",
+      "name": "沪电股份",
+      "score": 0.06516571938169058,
+      "close": null
+    },
+    {
+      "rank": 4,
+      "instrument": "SZ000807",
+      "name": "云铝股份",
+      "score": 0.062073360595976866,
+      "close": null
+    },
+    {
+      "rank": 5,
+      "instrument": "SH600875",
+      "name": "东方电气",
+      "score": 0.056895171928695795,
+      "close": null
+    },
+    {
+      "rank": 6,
+      "instrument": "SH600547",
+      "name": "山东黄金",
+      "score": 0.05257705026504048,
+      "close": null
+    },
+    {
+      "rank": 7,
+      "instrument": "SZ300782",
+      "name": "卓胜微",
+      "score": 0.05128958402025605,
+      "close": null
+    },
+    {
+      "rank": 8,
+      "instrument": "SZ300502",
+      "name": "新易盛",
+      "score": 0.04951371259627945,
+      "close": null
+    },
+    {
+      "rank": 9,
+      "instrument": "SH600183",
+      "name": "生益科技",
+      "score": 0.04851942325081364,
+      "close": null
+    },
+    {
+      "rank": 10,
+      "instrument": "SH601138",
+      "name": "工业富联",
+      "score": 0.04560155611909325,
+      "close": null
+    },
+    {
+      "rank": 11,
+      "instrument": "SZ300418",
+      "name": "昆仑万维",
+      "score": 0.04523706639337061,
+      "close": null
+    },
+    {
+      "rank": 12,
+      "instrument": "SH600346",
+      "name": "恒力石化",
+      "score": 0.044605694116520656,
+      "close": null
+    },
+    {
+      "rank": 13,
+      "instrument": "SZ002916",
+      "name": "深南电路",
+      "score": 0.043927595050402876,
+      "close": null
+    },
+    {
+      "rank": 14,
+      "instrument": "SZ000975",
+      "name": "山金国际",
+      "score": 0.04378961443455341,
+      "close": null
+    },
+    {
+      "rank": 15,
+      "instrument": "SH600066",
+      "name": "宇通客车",
+      "score": 0.04160293309244404,
+      "close": null
+    },
+    {
+      "rank": 16,
+      "instrument": "SH600522",
+      "name": "中天科技",
+      "score": 0.03620646360049261,
+      "close": null
+    },
+    {
+      "rank": 17,
+      "instrument": "SZ002475",
+      "name": "立讯精密",
+      "score": 0.03581877378195353,
+      "close": null
+    },
+    {
+      "rank": 18,
+      "instrument": "SH600233",
+      "name": "圆通速递",
+      "score": 0.033705044684417866,
+      "close": null
+    },
+    {
+      "rank": 19,
+      "instrument": "SZ000596",
+      "name": "古井贡酒",
+      "score": 0.03262068743451711,
+      "close": null
+    },
+    {
+      "rank": 20,
+      "instrument": "SH603993",
+      "name": "洛阳钼业",
+      "score": 0.03178446104291446,
+      "close": null
+    },
+    {
+      "rank": 21,
+      "instrument": "SZ300316",
+      "name": "晶盛机电",
+      "score": 0.03139562307327514,
+      "close": null
+    },
+    {
+      "rank": 22,
+      "instrument": "SZ000338",
+      "name": "潍柴动力",
+      "score": 0.03071877873879468,
+      "close": null
+    },
+    {
+      "rank": 23,
+      "instrument": "SZ000408",
+      "name": "藏格矿业",
+      "score": 0.029106210160497366,
+      "close": null
+    },
+    {
+      "rank": 24,
+      "instrument": "SH600029",
+      "name": "南方航空",
+      "score": 0.0287795245058332,
+      "close": null
+    },
+    {
+      "rank": 25,
+      "instrument": "SH600219",
+      "name": "南山铝业",
+      "score": 0.028216971952693397,
+      "close": null
+    },
+    {
+      "rank": 26,
+      "instrument": "SZ300750",
+      "name": "宁德时代",
+      "score": 0.027085282726476832,
+      "close": null
+    },
+    {
+      "rank": 27,
+      "instrument": "SZ300476",
+      "name": "胜宏科技",
+      "score": 0.026989090407052618,
+      "close": null
+    },
+    {
+      "rank": 28,
+      "instrument": "SZ002074",
+      "name": "国轩高科",
+      "score": 0.026863073230183002,
+      "close": null
+    },
+    {
+      "rank": 29,
+      "instrument": "SZ300124",
+      "name": "汇川技术",
+      "score": 0.025400457459530623,
+      "close": null
+    },
+    {
+      "rank": 30,
+      "instrument": "SZ300015",
+      "name": "爱尔眼科",
+      "score": 0.024655215266402873,
+      "close": null
+    },
+    {
+      "rank": 31,
+      "instrument": "SH688082",
+      "name": "盛美上海",
+      "score": 0.023854527570465373,
+      "close": null
+    },
+    {
+      "rank": 32,
+      "instrument": "SH603369",
+      "name": "今世缘",
+      "score": 0.02252011842965736,
+      "close": null
+    },
+    {
+      "rank": 33,
+      "instrument": "SZ301269",
+      "name": "华大九天",
+      "score": 0.021490311966518086,
+      "close": null
+    },
+    {
+      "rank": 34,
+      "instrument": "SH601688",
+      "name": "华泰证券",
+      "score": 0.021091923960747053,
+      "close": null
+    },
+    {
+      "rank": 35,
+      "instrument": "SH600989",
+      "name": "宝丰能源",
+      "score": 0.020841826502658797,
+      "close": null
+    },
+    {
+      "rank": 36,
+      "instrument": "SH601899",
+      "name": "紫金矿业",
+      "score": 0.020780474951609774,
+      "close": null
+    },
+    {
+      "rank": 37,
+      "instrument": "SZ300394",
+      "name": "天孚通信",
+      "score": 0.02071465489873341,
+      "close": null
+    },
+    {
+      "rank": 38,
+      "instrument": "SH688223",
+      "name": "晶科能源",
+      "score": 0.019708638356425594,
+      "close": null
+    },
+    {
+      "rank": 39,
+      "instrument": "SH605117",
+      "name": "德业股份",
+      "score": 0.019210786943532333,
+      "close": null
+    },
+    {
+      "rank": 40,
+      "instrument": "SZ300308",
+      "name": "中际旭创",
+      "score": 0.017700605148515628,
+      "close": null
+    },
+    {
+      "rank": 41,
+      "instrument": "SH688169",
+      "name": "石头科技",
+      "score": 0.017622822800084793,
+      "close": null
+    },
+    {
+      "rank": 42,
+      "instrument": "SH600741",
+      "name": "华域汽车",
+      "score": 0.01729909664912747,
+      "close": null
+    },
+    {
+      "rank": 43,
+      "instrument": "SZ300033",
+      "name": "同花顺",
+      "score": 0.016693134409804997,
+      "close": null
+    },
+    {
+      "rank": 44,
+      "instrument": "SH600426",
+      "name": "华鲁恒升",
+      "score": 0.01665706005347824,
+      "close": null
+    },
+    {
+      "rank": 45,
+      "instrument": "SZ000630",
+      "name": "铜陵有色",
+      "score": 0.01657529719674361,
+      "close": null
+    },
+    {
+      "rank": 46,
+      "instrument": "SH600010",
+      "name": "包钢股份",
+      "score": 0.01642714335094047,
+      "close": null
+    },
+    {
+      "rank": 47,
+      "instrument": "SH600115",
+      "name": "中国东航",
+      "score": 0.015933382325069537,
+      "close": null
+    },
+    {
+      "rank": 48,
+      "instrument": "SZ300759",
+      "name": "康龙化成",
+      "score": 0.01566267403939487,
+      "close": null
+    },
+    {
+      "rank": 49,
+      "instrument": "SH601689",
+      "name": "拓普集团",
+      "score": 0.015374802565834867,
+      "close": null
+    },
+    {
+      "rank": 50,
+      "instrument": "SH603799",
+      "name": "华友钴业",
+      "score": 0.015272272531225211,
+      "close": null
+    },
+    {
+      "rank": 51,
+      "instrument": "SH601600",
+      "name": "中国铝业",
+      "score": 0.015120521976962918,
+      "close": null
+    },
+    {
+      "rank": 52,
+      "instrument": "SZ002384",
+      "name": "东山精密",
+      "score": 0.015102720914623287,
+      "close": null
+    },
+    {
+      "rank": 53,
+      "instrument": "SH601021",
+      "name": "春秋航空",
+      "score": 0.015044550969486956,
+      "close": null
+    },
+    {
+      "rank": 54,
+      "instrument": "SH600160",
+      "name": "巨化股份",
+      "score": 0.014692219473937373,
+      "close": null
+    },
+    {
+      "rank": 55,
+      "instrument": "SH600588",
+      "name": "用友网络",
+      "score": 0.014359084137985577,
+      "close": null
+    },
+    {
+      "rank": 56,
+      "instrument": "SZ300433",
+      "name": "蓝思科技",
+      "score": 0.014270785883163635,
+      "close": null
+    },
+    {
+      "rank": 57,
+      "instrument": "SZ001979",
+      "name": "招商蛇口",
+      "score": 0.013231054179104581,
+      "close": null
+    },
+    {
+      "rank": 58,
+      "instrument": "SZ301236",
+      "name": "软通动力",
+      "score": 0.013138811061412396,
+      "close": null
+    },
+    {
+      "rank": 59,
+      "instrument": "SZ002028",
+      "name": "思源电气",
+      "score": 0.0127073016805762,
+      "close": null
+    },
+    {
+      "rank": 60,
+      "instrument": "SZ000651",
+      "name": "格力电器",
+      "score": 0.012538761915594688,
+      "close": null
+    },
+    {
+      "rank": 61,
+      "instrument": "SH601127",
+      "name": "赛力斯",
+      "score": 0.012461036988605305,
+      "close": null
+    },
+    {
+      "rank": 62,
+      "instrument": "SZ000425",
+      "name": "徐工机械",
+      "score": 0.012424642800199651,
+      "close": null
+    },
+    {
+      "rank": 63,
+      "instrument": "SH600887",
+      "name": "伊利股份",
+      "score": 0.012280524082052798,
+      "close": null
+    },
+    {
+      "rank": 64,
+      "instrument": "SZ000776",
+      "name": "广发证券",
+      "score": 0.01187651931397784,
+      "close": null
+    },
+    {
+      "rank": 65,
+      "instrument": "SH600415",
+      "name": "小商品城",
+      "score": 0.011467645847333617,
+      "close": null
+    },
+    {
+      "rank": 66,
+      "instrument": "SZ003816",
+      "name": "中国广核",
+      "score": 0.01103215992128941,
+      "close": null
+    },
+    {
+      "rank": 67,
+      "instrument": "SH600188",
+      "name": "兖矿能源",
+      "score": 0.010641418136900605,
+      "close": null
+    },
+    {
+      "rank": 68,
+      "instrument": "SZ002050",
+      "name": "三花智控",
+      "score": 0.01048270495772191,
+      "close": null
+    },
+    {
+      "rank": 69,
+      "instrument": "SZ002230",
+      "name": "科大讯飞",
+      "score": 0.010468648724331887,
+      "close": null
+    },
+    {
+      "rank": 70,
+      "instrument": "SH688506",
+      "name": "百利天恒",
+      "score": 0.010004561466055455,
+      "close": null
+    },
+    {
+      "rank": 71,
+      "instrument": "SZ300251",
+      "name": "光线传媒",
+      "score": 0.009753869571315838,
+      "close": null
+    },
+    {
+      "rank": 72,
+      "instrument": "SZ300014",
+      "name": "亿纬锂能",
+      "score": 0.009688548365871132,
+      "close": null
+    },
+    {
+      "rank": 73,
+      "instrument": "SZ300059",
+      "name": "东方财富",
+      "score": 0.00962101641632464,
+      "close": null
+    },
+    {
+      "rank": 74,
+      "instrument": "SZ002648",
+      "name": "卫星化学",
+      "score": 0.0094074137239213,
+      "close": null
+    },
+    {
+      "rank": 75,
+      "instrument": "SH601398",
+      "name": "工商银行",
+      "score": 0.00916212131366965,
+      "close": null
+    },
+    {
+      "rank": 76,
+      "instrument": "SZ002311",
+      "name": "海大集团",
+      "score": 0.009025145565503292,
+      "close": null
+    },
+    {
+      "rank": 77,
+      "instrument": "SZ300832",
+      "name": "新产业",
+      "score": 0.00868745226269676,
+      "close": null
+    },
+    {
+      "rank": 78,
+      "instrument": "SZ000977",
+      "name": "浪潮信息",
+      "score": 0.008589076938890956,
+      "close": null
+    },
+    {
+      "rank": 79,
+      "instrument": "SH601077",
+      "name": "渝农商行",
+      "score": 0.008478916952944952,
+      "close": null
+    },
+    {
+      "rank": 80,
+      "instrument": "SH603195",
+      "name": "公牛集团",
+      "score": 0.00828924716007647,
+      "close": null
+    },
+    {
+      "rank": 81,
+      "instrument": "SH601058",
+      "name": "赛轮轮胎",
+      "score": 0.008285371025849307,
+      "close": null
+    },
+    {
+      "rank": 82,
+      "instrument": "SH600196",
+      "name": "复星医药",
+      "score": 0.007606445037448005,
+      "close": null
+    },
+    {
+      "rank": 83,
+      "instrument": "SH600276",
+      "name": "恒瑞医药",
+      "score": 0.007269801979341918,
+      "close": null
+    },
+    {
+      "rank": 84,
+      "instrument": "SZ002625",
+      "name": "光启技术",
+      "score": 0.007071191064848145,
+      "close": null
+    },
+    {
+      "rank": 85,
+      "instrument": "SH601658",
+      "name": "邮储银行",
+      "score": 0.00665463849708943,
+      "close": null
+    },
+    {
+      "rank": 86,
+      "instrument": "SZ300347",
+      "name": "泰格医药",
+      "score": 0.00649227702430369,
+      "close": null
+    },
+    {
+      "rank": 87,
+      "instrument": "SZ300896",
+      "name": "爱美客",
+      "score": 0.006096792246946655,
+      "close": null
+    },
+    {
+      "rank": 88,
+      "instrument": "SH600803",
+      "name": "新奥股份",
+      "score": 0.0060664393170967,
+      "close": null
+    },
+    {
+      "rank": 89,
+      "instrument": "SH601298",
+      "name": "青岛港",
+      "score": 0.0060473124634681345,
+      "close": null
+    },
+    {
+      "rank": 90,
+      "instrument": "SH603986",
+      "name": "兆易创新",
+      "score": 0.0056686597868038134,
+      "close": null
+    },
+    {
+      "rank": 91,
+      "instrument": "SH600893",
+      "name": "航发动力",
+      "score": 0.005519878664384052,
+      "close": null
+    },
+    {
+      "rank": 92,
+      "instrument": "SZ000895",
+      "name": "双汇发展",
+      "score": 0.005437803425789546,
+      "close": null
+    },
+    {
+      "rank": 93,
+      "instrument": "SZ300274",
+      "name": "阳光电源",
+      "score": 0.005209681921815694,
+      "close": null
+    },
+    {
+      "rank": 94,
+      "instrument": "SZ300866",
+      "name": "安克创新",
+      "score": 0.0044770214530847,
+      "close": null
+    },
+    {
+      "rank": 95,
+      "instrument": "SH601825",
+      "name": "沪农商行",
+      "score": 0.0041896880786509525,
+      "close": null
+    },
+    {
+      "rank": 96,
+      "instrument": "SH603260",
+      "name": "合盛硅业",
+      "score": 0.004107554824520586,
+      "close": null
+    },
+    {
+      "rank": 97,
+      "instrument": "SH601336",
+      "name": "新华保险",
+      "score": 0.003468181584589048,
+      "close": null
+    },
+    {
+      "rank": 98,
+      "instrument": "SH601988",
+      "name": "中国银行",
+      "score": 0.003286885808098607,
+      "close": null
+    },
+    {
+      "rank": 99,
+      "instrument": "SH601012",
+      "name": "隆基绿能",
+      "score": 0.0031846964227088157,
+      "close": null
+    },
+    {
+      "rank": 100,
+      "instrument": "SZ300413",
+      "name": "芒果超媒",
+      "score": 0.0021536807522056223,
+      "close": null
+    },
+    {
+      "rank": 101,
+      "instrument": "SH600489",
+      "name": "中金黄金",
+      "score": 0.0020732016937716814,
+      "close": null
+    },
+    {
+      "rank": 102,
+      "instrument": "SZ000725",
+      "name": "京东方A",
+      "score": 0.0019399287211413476,
+      "close": null
+    },
+    {
+      "rank": 103,
+      "instrument": "SZ002142",
+      "name": "宁波银行",
+      "score": 0.0007816857673724833,
+      "close": null
+    },
+    {
+      "rank": 104,
+      "instrument": "SH601009",
+      "name": "南京银行",
+      "score": 0.0007140792359114003,
+      "close": null
+    },
+    {
+      "rank": 105,
+      "instrument": "SH601901",
+      "name": "方正证券",
+      "score": 0.00032871046251984855,
+      "close": null
+    },
+    {
+      "rank": 106,
+      "instrument": "SH600039",
+      "name": "四川路桥",
+      "score": 0.0003224927939163444,
+      "close": null
+    },
+    {
+      "rank": 107,
+      "instrument": "SZ002027",
+      "name": "分众传媒",
+      "score": -0.0002206006460149098,
+      "close": null
+    },
+    {
+      "rank": 108,
+      "instrument": "SH601288",
+      "name": "农业银行",
+      "score": -0.0004430926261069658,
+      "close": null
+    },
+    {
+      "rank": 109,
+      "instrument": "SZ000708",
+      "name": "中信特钢",
+      "score": -0.0007869529794000176,
+      "close": null
+    },
+    {
+      "rank": 110,
+      "instrument": "SH603288",
+      "name": "海天味业",
+      "score": -0.0010606924747287843,
+      "close": null
+    },
+    {
+      "rank": 111,
+      "instrument": "SH601898",
+      "name": "中煤能源",
+      "score": -0.0012330315925837194,
+      "close": null
+    },
+    {
+      "rank": 112,
+      "instrument": "SH600999",
+      "name": "招商证券",
+      "score": -0.0013315621193959143,
+      "close": null
+    },
+    {
+      "rank": 113,
+      "instrument": "SH600372",
+      "name": "中航机载",
+      "score": -0.0015571614088125724,
+      "close": null
+    },
+    {
+      "rank": 114,
+      "instrument": "SH600886",
+      "name": "国投电力",
+      "score": -0.001741727495201156,
+      "close": null
+    },
+    {
+      "rank": 115,
+      "instrument": "SH600061",
+      "name": "国投资本",
+      "score": -0.0018368047305469956,
+      "close": null
+    },
+    {
+      "rank": 116,
+      "instrument": "SH601628",
+      "name": "中国人寿",
+      "score": -0.0020794324329583822,
+      "close": null
+    },
+    {
+      "rank": 117,
+      "instrument": "SH601318",
+      "name": "中国平安",
+      "score": -0.0022936056450640827,
+      "close": null
+    },
+    {
+      "rank": 118,
+      "instrument": "SH600030",
+      "name": "中信证券",
+      "score": -0.0023906179593462017,
+      "close": null
+    },
+    {
+      "rank": 119,
+      "instrument": "SH601888",
+      "name": "中国中免",
+      "score": -0.0028836994213262595,
+      "close": null
+    },
+    {
+      "rank": 120,
+      "instrument": "SH600900",
+      "name": "长江电力",
+      "score": -0.003019540713758303,
+      "close": null
+    },
+    {
+      "rank": 121,
+      "instrument": "SH600309",
+      "name": "万华化学",
+      "score": -0.0030942696240354173,
+      "close": null
+    },
+    {
+      "rank": 122,
+      "instrument": "SH603019",
+      "name": "中科曙光",
+      "score": -0.0031653416306426643,
+      "close": null
+    },
+    {
+      "rank": 123,
+      "instrument": "SH601995",
+      "name": "中金公司",
+      "score": -0.00328499289051381,
+      "close": null
+    },
+    {
+      "rank": 124,
+      "instrument": "SH600111",
+      "name": "北方稀土",
+      "score": -0.003336935997591093,
+      "close": null
+    },
+    {
+      "rank": 125,
+      "instrument": "SH600600",
+      "name": "青岛啤酒",
+      "score": -0.0036018174168648094,
+      "close": null
+    },
+    {
+      "rank": 126,
+      "instrument": "SH600919",
+      "name": "江苏银行",
+      "score": -0.0037155822775383706,
+      "close": null
+    },
+    {
+      "rank": 127,
+      "instrument": "SH600031",
+      "name": "三一重工",
+      "score": -0.003792927424831313,
+      "close": null
+    },
+    {
+      "rank": 128,
+      "instrument": "SH688256",
+      "name": "寒武纪",
+      "score": -0.0038428743337030283,
+      "close": null
+    },
+    {
+      "rank": 129,
+      "instrument": "SH601607",
+      "name": "上海医药",
+      "score": -0.004083980718920104,
+      "close": null
+    },
+    {
+      "rank": 130,
+      "instrument": "SZ300442",
+      "name": "润泽科技",
+      "score": -0.004559429706021028,
+      "close": null
+    },
+    {
+      "rank": 131,
+      "instrument": "SH601939",
+      "name": "建设银行",
+      "score": -0.004568695039668024,
+      "close": null
+    },
+    {
+      "rank": 132,
+      "instrument": "SH600941",
+      "name": "中国移动",
+      "score": -0.004622688119684347,
+      "close": null
+    },
+    {
+      "rank": 133,
+      "instrument": "SH601985",
+      "name": "中国核电",
+      "score": -0.0046256263214456495,
+      "close": null
+    },
+    {
+      "rank": 134,
+      "instrument": "SH600926",
+      "name": "杭州银行",
+      "score": -0.004805218954110626,
+      "close": null
+    },
+    {
+      "rank": 135,
+      "instrument": "SZ000333",
+      "name": "美的集团",
+      "score": -0.004811891577388231,
+      "close": null
+    },
+    {
+      "rank": 136,
+      "instrument": "SZ300628",
+      "name": "亿联网络",
+      "score": -0.004839253926232744,
+      "close": null
+    },
+    {
+      "rank": 137,
+      "instrument": "SH600570",
+      "name": "恒生电子",
+      "score": -0.004892448469198998,
+      "close": null
+    },
+    {
+      "rank": 138,
+      "instrument": "SH601066",
+      "name": "中信建投",
+      "score": -0.005137886619792737,
+      "close": null
+    },
+    {
+      "rank": 139,
+      "instrument": "SH601601",
+      "name": "中国太保",
+      "score": -0.005213802056021058,
+      "close": null
+    },
+    {
+      "rank": 140,
+      "instrument": "SH601360",
+      "name": "三六零",
+      "score": -0.005489557477214053,
+      "close": null
+    },
+    {
+      "rank": 141,
+      "instrument": "SH600377",
+      "name": "宁沪高速",
+      "score": -0.005582478290531406,
+      "close": null
+    },
+    {
+      "rank": 142,
+      "instrument": "SZ300999",
+      "name": "金龙鱼",
+      "score": -0.005839173889868776,
+      "close": null
+    },
+    {
+      "rank": 143,
+      "instrument": "SH601328",
+      "name": "交通银行",
+      "score": -0.005873908411561733,
+      "close": null
+    },
+    {
+      "rank": 144,
+      "instrument": "SH601728",
+      "name": "中国电信",
+      "score": -0.005988122892073761,
+      "close": null
+    },
+    {
+      "rank": 145,
+      "instrument": "SH600436",
+      "name": "片仔癀",
+      "score": -0.006152786891721904,
+      "close": null
+    },
+    {
+      "rank": 146,
+      "instrument": "SH600809",
+      "name": "山西汾酒",
+      "score": -0.006308554816369977,
+      "close": null
+    },
+    {
+      "rank": 147,
+      "instrument": "SH600660",
+      "name": "福耀玻璃",
+      "score": -0.006393106117113374,
+      "close": null
+    },
+    {
+      "rank": 148,
+      "instrument": "SH601225",
+      "name": "陕西煤业",
+      "score": -0.00667426918487175,
+      "close": null
+    },
+    {
+      "rank": 149,
+      "instrument": "SH601857",
+      "name": "中国石油",
+      "score": -0.007059561167784397,
+      "close": null
+    },
+    {
+      "rank": 150,
+      "instrument": "SZ002600",
+      "name": "领益智造",
+      "score": -0.007433097180923614,
+      "close": null
+    },
+    {
+      "rank": 151,
+      "instrument": "SH600015",
+      "name": "华夏银行",
+      "score": -0.007606784730110852,
+      "close": null
+    },
+    {
+      "rank": 152,
+      "instrument": "SH601998",
+      "name": "中信银行",
+      "score": -0.007636704360176728,
+      "close": null
+    },
+    {
+      "rank": 153,
+      "instrument": "SZ000792",
+      "name": "盐湖股份",
+      "score": -0.007951954221477157,
+      "close": null
+    },
+    {
+      "rank": 154,
+      "instrument": "SZ000001",
+      "name": "平安银行",
+      "score": -0.007963182268624766,
+      "close": null
+    },
+    {
+      "rank": 155,
+      "instrument": "SZ002601",
+      "name": "龙佰集团",
+      "score": -0.00806125827008807,
+      "close": null
+    },
+    {
+      "rank": 156,
+      "instrument": "SH688303",
+      "name": "大全能源",
+      "score": -0.00837428880627729,
+      "close": null
+    },
+    {
+      "rank": 157,
+      "instrument": "SZ000938",
+      "name": "紫光股份",
+      "score": -0.008451288780963915,
+      "close": null
+    },
+    {
+      "rank": 158,
+      "instrument": "SH603296",
+      "name": "华勤技术",
+      "score": -0.008805102294031277,
+      "close": null
+    },
+    {
+      "rank": 159,
+      "instrument": "SH601088",
+      "name": "中国神华",
+      "score": -0.008886587418039165,
+      "close": null
+    },
+    {
+      "rank": 160,
+      "instrument": "SH600362",
+      "name": "江西铜业",
+      "score": -0.00891722750321099,
+      "close": null
+    },
+    {
+      "rank": 161,
+      "instrument": "SH601456",
+      "name": "国联民生",
+      "score": -0.00897777009431856,
+      "close": null
+    },
+    {
+      "rank": 162,
+      "instrument": "SZ002001",
+      "name": "新和成",
+      "score": -0.009139498944650421,
+      "close": null
+    },
+    {
+      "rank": 163,
+      "instrument": "SH601788",
+      "name": "光大证券",
+      "score": -0.009475720548369027,
+      "close": null
+    },
+    {
+      "rank": 164,
+      "instrument": "SZ002422",
+      "name": "科伦药业",
+      "score": -0.009483303619609966,
+      "close": null
+    },
+    {
+      "rank": 165,
+      "instrument": "SZ002179",
+      "name": "中航光电",
+      "score": -0.009917038440123437,
+      "close": null
+    },
+    {
+      "rank": 166,
+      "instrument": "SZ300803",
+      "name": "指南针",
+      "score": -0.010010260514903321,
+      "close": null
+    },
+    {
+      "rank": 167,
+      "instrument": "SH601006",
+      "name": "大秦铁路",
+      "score": -0.010043130109614946,
+      "close": null
+    },
+    {
+      "rank": 168,
+      "instrument": "SH600438",
+      "name": "通威股份",
+      "score": -0.010327638945963067,
+      "close": null
+    },
+    {
+      "rank": 169,
+      "instrument": "SZ300979",
+      "name": "华利集团",
+      "score": -0.01040761675713288,
+      "close": null
+    },
+    {
+      "rank": 170,
+      "instrument": "SH600938",
+      "name": "中国海油",
+      "score": -0.010599102317666073,
+      "close": null
+    },
+    {
+      "rank": 171,
+      "instrument": "SH600025",
+      "name": "华能水电",
+      "score": -0.01084631953316324,
+      "close": null
+    },
+    {
+      "rank": 172,
+      "instrument": "SH603259",
+      "name": "药明康德",
+      "score": -0.011075048107031107,
+      "close": null
+    },
+    {
+      "rank": 173,
+      "instrument": "SH600050",
+      "name": "中国联通",
+      "score": -0.011144872591584176,
+      "close": null
+    },
+    {
+      "rank": 174,
+      "instrument": "SH601698",
+      "name": "中国卫通",
+      "score": -0.011368435433157818,
+      "close": null
+    },
+    {
+      "rank": 175,
+      "instrument": "SH600519",
+      "name": "贵州茅台",
+      "score": -0.011626031994337462,
+      "close": null
+    },
+    {
+      "rank": 176,
+      "instrument": "SH603392",
+      "name": "万泰生物",
+      "score": -0.011673543676072744,
+      "close": null
+    },
+    {
+      "rank": 177,
+      "instrument": "SZ000100",
+      "name": "TCL科技",
+      "score": -0.011733195859793927,
+      "close": null
+    },
+    {
+      "rank": 178,
+      "instrument": "SH688126",
+      "name": "沪硅产业",
+      "score": -0.012261727025265602,
+      "close": null
+    },
+    {
+      "rank": 179,
+      "instrument": "SZ002466",
+      "name": "天齐锂业",
+      "score": -0.012274425133994661,
+      "close": null
+    },
+    {
+      "rank": 180,
+      "instrument": "SH601881",
+      "name": "中国银河",
+      "score": -0.012290325022205577,
+      "close": null
+    },
+    {
+      "rank": 181,
+      "instrument": "SH601111",
+      "name": "中国国航",
+      "score": -0.013157441180648483,
+      "close": null
+    },
+    {
+      "rank": 182,
+      "instrument": "SZ002594",
+      "name": "比亚迪",
+      "score": -0.013251702017219624,
+      "close": null
+    },
+    {
+      "rank": 183,
+      "instrument": "SH600930",
+      "name": "华电新能",
+      "score": -0.013350715080529861,
+      "close": null
+    },
+    {
+      "rank": 184,
+      "instrument": "SH601100",
+      "name": "恒立液压",
+      "score": -0.013426979331879575,
+      "close": null
+    },
+    {
+      "rank": 185,
+      "instrument": "SH600023",
+      "name": "浙能电力",
+      "score": -0.013455173240483958,
+      "close": null
+    },
+    {
+      "rank": 186,
+      "instrument": "SZ300760",
+      "name": "迈瑞医疗",
+      "score": -0.013550437509956303,
+      "close": null
+    },
+    {
+      "rank": 187,
+      "instrument": "SH600674",
+      "name": "川投能源",
+      "score": -0.013586540014109553,
+      "close": null
+    },
+    {
+      "rank": 188,
+      "instrument": "SH600515",
+      "name": "海南机场",
+      "score": -0.013850815286351154,
+      "close": null
+    },
+    {
+      "rank": 189,
+      "instrument": "SH601059",
+      "name": "信达证券",
+      "score": -0.013938806737241656,
+      "close": null
+    },
+    {
+      "rank": 190,
+      "instrument": "SZ300122",
+      "name": "智飞生物",
+      "score": -0.013969920205115232,
+      "close": null
+    },
+    {
+      "rank": 191,
+      "instrument": "SZ000768",
+      "name": "中航西飞",
+      "score": -0.014349427811559888,
+      "close": null
+    },
+    {
+      "rank": 192,
+      "instrument": "SH603501",
+      "name": "豪威集团",
+      "score": -0.01447653188092881,
+      "close": null
+    },
+    {
+      "rank": 193,
+      "instrument": "SZ002352",
+      "name": "顺丰控股",
+      "score": -0.014672740699758572,
+      "close": null
+    },
+    {
+      "rank": 194,
+      "instrument": "SZ000786",
+      "name": "北新建材",
+      "score": -0.014704198507789349,
+      "close": null
+    },
+    {
+      "rank": 195,
+      "instrument": "SZ002241",
+      "name": "歌尔股份",
+      "score": -0.015155922945138865,
+      "close": null
+    },
+    {
+      "rank": 196,
+      "instrument": "SZ002920",
+      "name": "德赛西威",
+      "score": -0.01552293361189378,
+      "close": null
+    },
+    {
+      "rank": 197,
+      "instrument": "SH601377",
+      "name": "兴业证券",
+      "score": -0.015766654063464555,
+      "close": null
+    },
+    {
+      "rank": 198,
+      "instrument": "SH601878",
+      "name": "浙商证券",
+      "score": -0.016164916808385294,
+      "close": null
+    },
+    {
+      "rank": 199,
+      "instrument": "SZ000002",
+      "name": "万科A",
+      "score": -0.01626151078686456,
+      "close": null
+    },
+    {
+      "rank": 200,
+      "instrument": "SH600690",
+      "name": "海尔智家",
+      "score": -0.016365464117530863,
+      "close": null
+    },
+    {
+      "rank": 201,
+      "instrument": "SZ000166",
+      "name": "申万宏源",
+      "score": -0.016464985140593587,
+      "close": null
+    },
+    {
+      "rank": 202,
+      "instrument": "SH601916",
+      "name": "浙商银行",
+      "score": -0.016488167898703925,
+      "close": null
+    },
+    {
+      "rank": 203,
+      "instrument": "SH600918",
+      "name": "中泰证券",
+      "score": -0.016672721893118685,
+      "close": null
+    },
+    {
+      "rank": 204,
+      "instrument": "SH600018",
+      "name": "上港集团",
+      "score": -0.016790948745833985,
+      "close": null
+    },
+    {
+      "rank": 205,
+      "instrument": "SZ002714",
+      "name": "牧原股份",
+      "score": -0.016834399818385904,
+      "close": null
+    },
+    {
+      "rank": 206,
+      "instrument": "SZ300661",
+      "name": "圣邦股份",
+      "score": -0.01685326933340477,
+      "close": null
+    },
+    {
+      "rank": 207,
+      "instrument": "SZ000876",
+      "name": "新希望",
+      "score": -0.017223443290343234,
+      "close": null
+    },
+    {
+      "rank": 208,
+      "instrument": "SH600011",
+      "name": "华能国际",
+      "score": -0.017472069984886367,
+      "close": null
+    },
+    {
+      "rank": 209,
+      "instrument": "SZ002459",
+      "name": "晶澳科技",
+      "score": -0.017754757474018376,
+      "close": null
+    },
+    {
+      "rank": 210,
+      "instrument": "SH601668",
+      "name": "中国建筑",
+      "score": -0.01783075022847831,
+      "close": null
+    },
+    {
+      "rank": 211,
+      "instrument": "SH601319",
+      "name": "中国人保",
+      "score": -0.018235464658218972,
+      "close": null
+    },
+    {
+      "rank": 212,
+      "instrument": "SH600176",
+      "name": "中国巨石",
+      "score": -0.018313083230105554,
+      "close": null
+    },
+    {
+      "rank": 213,
+      "instrument": "SZ001965",
+      "name": "招商公路",
+      "score": -0.018338038510545825,
+      "close": null
+    },
+    {
+      "rank": 214,
+      "instrument": "SH600048",
+      "name": "保利发展",
+      "score": -0.01881892724669998,
+      "close": null
+    },
+    {
+      "rank": 215,
+      "instrument": "SH600089",
+      "name": "特变电工",
+      "score": -0.018820335586385864,
+      "close": null
+    },
+    {
+      "rank": 216,
+      "instrument": "SH600406",
+      "name": "国电南瑞",
+      "score": -0.018826020664097935,
+      "close": null
+    },
+    {
+      "rank": 217,
+      "instrument": "SH601136",
+      "name": "首创证券",
+      "score": -0.019093984408048156,
+      "close": null
+    },
+    {
+      "rank": 218,
+      "instrument": "SH600150",
+      "name": "中国船舶",
+      "score": -0.019522475224261263,
+      "close": null
+    },
+    {
+      "rank": 219,
+      "instrument": "SZ000617",
+      "name": "中油资本",
+      "score": -0.02000262246255885,
+      "close": null
+    },
+    {
+      "rank": 220,
+      "instrument": "SH605499",
+      "name": "东鹏饮料",
+      "score": -0.020716137361309624,
+      "close": null
+    },
+    {
+      "rank": 221,
+      "instrument": "SH600795",
+      "name": "国电电力",
+      "score": -0.020768258210940544,
+      "close": null
+    },
+    {
+      "rank": 222,
+      "instrument": "SZ302132",
+      "name": "中航成飞",
+      "score": -0.020801156490009732,
+      "close": null
+    },
+    {
+      "rank": 223,
+      "instrument": "SH688111",
+      "name": "金山办公",
+      "score": -0.02113739913030065,
+      "close": null
+    },
+    {
+      "rank": 224,
+      "instrument": "SH600845",
+      "name": "宝信软件",
+      "score": -0.021387545502759175,
+      "close": null
+    },
+    {
+      "rank": 225,
+      "instrument": "SH601868",
+      "name": "中国能建",
+      "score": -0.021951171457388695,
+      "close": null
+    },
+    {
+      "rank": 226,
+      "instrument": "SZ002236",
+      "name": "大华股份",
+      "score": -0.022099954504922862,
+      "close": null
+    },
+    {
+      "rank": 227,
+      "instrument": "SZ002252",
+      "name": "上海莱士",
+      "score": -0.022286035612319684,
+      "close": null
+    },
+    {
+      "rank": 228,
+      "instrument": "SH601117",
+      "name": "中国化学",
+      "score": -0.02327343399955999,
+      "close": null
+    },
+    {
+      "rank": 229,
+      "instrument": "SZ002460",
+      "name": "赣锋锂业",
+      "score": -0.023448793850707254,
+      "close": null
+    },
+    {
+      "rank": 230,
+      "instrument": "SH688041",
+      "name": "海光信息",
+      "score": -0.023836738485504404,
+      "close": null
+    },
+    {
+      "rank": 231,
+      "instrument": "SH601877",
+      "name": "正泰电器",
+      "score": -0.02387379552460495,
+      "close": null
+    },
+    {
+      "rank": 232,
+      "instrument": "SH601618",
+      "name": "中国中冶",
+      "score": -0.023899725691735336,
+      "close": null
+    },
+    {
+      "rank": 233,
+      "instrument": "SZ300498",
+      "name": "温氏股份",
+      "score": -0.02470355935404497,
+      "close": null
+    },
+    {
+      "rank": 234,
+      "instrument": "SH600085",
+      "name": "同仁堂",
+      "score": -0.02470849500290315,
+      "close": null
+    },
+    {
+      "rank": 235,
+      "instrument": "SH600027",
+      "name": "华电国际",
+      "score": -0.024911469807674412,
+      "close": null
+    },
+    {
+      "rank": 236,
+      "instrument": "SH688036",
+      "name": "传音控股",
+      "score": -0.025027178067553498,
+      "close": null
+    },
+    {
+      "rank": 237,
+      "instrument": "SH688472",
+      "name": "阿特斯",
+      "score": -0.02517589681543327,
+      "close": null
+    },
+    {
+      "rank": 238,
+      "instrument": "SH601229",
+      "name": "上海银行",
+      "score": -0.025373725452907937,
+      "close": null
+    },
+    {
+      "rank": 239,
+      "instrument": "SH688047",
+      "name": "龙芯中科",
+      "score": -0.025702213998458158,
+      "close": null
+    },
+    {
+      "rank": 240,
+      "instrument": "SZ000063",
+      "name": "中兴通讯",
+      "score": -0.02715665127218822,
+      "close": null
+    },
+    {
+      "rank": 241,
+      "instrument": "SH601169",
+      "name": "北京银行",
+      "score": -0.027605073990139044,
+      "close": null
+    },
+    {
+      "rank": 242,
+      "instrument": "SZ002415",
+      "name": "海康威视",
+      "score": -0.027606807302809493,
+      "close": null
+    },
+    {
+      "rank": 243,
+      "instrument": "SH600584",
+      "name": "长电科技",
+      "score": -0.028287950684495994,
+      "close": null
+    },
+    {
+      "rank": 244,
+      "instrument": "SH601018",
+      "name": "宁波港",
+      "score": -0.028778924810500924,
+      "close": null
+    },
+    {
+      "rank": 245,
+      "instrument": "SH600026",
+      "name": "中远海能",
+      "score": -0.028891888554518484,
+      "close": null
+    },
+    {
+      "rank": 246,
+      "instrument": "SH600036",
+      "name": "招商银行",
+      "score": -0.029340746649315845,
+      "close": null
+    },
+    {
+      "rank": 247,
+      "instrument": "SZ001391",
+      "name": "国货航",
+      "score": -0.029750618946559802,
+      "close": null
+    },
+    {
+      "rank": 248,
+      "instrument": "SH688008",
+      "name": "澜起科技",
+      "score": -0.029818282146135064,
+      "close": null
+    },
+    {
+      "rank": 249,
+      "instrument": "SH601808",
+      "name": "中海油服",
+      "score": -0.029881865428004133,
+      "close": null
+    },
+    {
+      "rank": 250,
+      "instrument": "SH601166",
+      "name": "兴业银行",
+      "score": -0.029913623743642984,
+      "close": null
+    },
+    {
+      "rank": 251,
+      "instrument": "SZ000858",
+      "name": "五粮液",
+      "score": -0.03022331731179927,
+      "close": null
+    },
+    {
+      "rank": 252,
+      "instrument": "SH600009",
+      "name": "上海机场",
+      "score": -0.03026748553456003,
+      "close": null
+    },
+    {
+      "rank": 253,
+      "instrument": "SH601390",
+      "name": "中国中铁",
+      "score": -0.030400967075351563,
+      "close": null
+    },
+    {
+      "rank": 254,
+      "instrument": "SZ000983",
+      "name": "山西焦煤",
+      "score": -0.03063259841703681,
+      "close": null
+    },
+    {
+      "rank": 255,
+      "instrument": "SZ002736",
+      "name": "国信证券",
+      "score": -0.031085673412118674,
+      "close": null
+    },
+    {
+      "rank": 256,
+      "instrument": "SH600028",
+      "name": "中国石化",
+      "score": -0.03145826733238542,
+      "close": null
+    },
+    {
+      "rank": 257,
+      "instrument": "SH601816",
+      "name": "京沪高铁",
+      "score": -0.03236290994411662,
+      "close": null
+    },
+    {
+      "rank": 258,
+      "instrument": "SH600016",
+      "name": "民生银行",
+      "score": -0.032937793118498364,
+      "close": null
+    },
+    {
+      "rank": 259,
+      "instrument": "SH601818",
+      "name": "光大银行",
+      "score": -0.03294622733120943,
+      "close": null
+    },
+    {
+      "rank": 260,
+      "instrument": "SH600585",
+      "name": "海螺水泥",
+      "score": -0.033098890283853016,
+      "close": null
+    },
+    {
+      "rank": 261,
+      "instrument": "SH601919",
+      "name": "中远海控",
+      "score": -0.033269147886836145,
+      "close": null
+    },
+    {
+      "rank": 262,
+      "instrument": "SZ000157",
+      "name": "中联重科",
+      "score": -0.03335914422261098,
+      "close": null
+    },
+    {
+      "rank": 263,
+      "instrument": "SH600760",
+      "name": "中航沈飞",
+      "score": -0.03371079138925634,
+      "close": null
+    },
+    {
+      "rank": 264,
+      "instrument": "SH600460",
+      "name": "士兰微",
+      "score": -0.03407453552327121,
+      "close": null
+    },
+    {
+      "rank": 265,
+      "instrument": "SH688187",
+      "name": "时代电气",
+      "score": -0.0342705558178577,
+      "close": null
+    },
+    {
+      "rank": 266,
+      "instrument": "SH600905",
+      "name": "三峡能源",
+      "score": -0.03428746117654604,
+      "close": null
+    },
+    {
+      "rank": 267,
+      "instrument": "SH601800",
+      "name": "中国交建",
+      "score": -0.0343946478321785,
+      "close": null
+    },
+    {
+      "rank": 268,
+      "instrument": "SH688271",
+      "name": "联影医疗",
+      "score": -0.034477174714986965,
+      "close": null
+    },
+    {
+      "rank": 269,
+      "instrument": "SZ002371",
+      "name": "北方华创",
+      "score": -0.03525894334959541,
+      "close": null
+    },
+    {
+      "rank": 270,
+      "instrument": "SH600104",
+      "name": "上汽集团",
+      "score": -0.03562582554425454,
+      "close": null
+    },
+    {
+      "rank": 271,
+      "instrument": "SH601766",
+      "name": "中国中车",
+      "score": -0.03572097925890928,
+      "close": null
+    },
+    {
+      "rank": 272,
+      "instrument": "SH601186",
+      "name": "中国铁建",
+      "score": -0.036176515474015715,
+      "close": null
+    },
+    {
+      "rank": 273,
+      "instrument": "SH600000",
+      "name": "浦发银行",
+      "score": -0.03637204438362766,
+      "close": null
+    },
+    {
+      "rank": 274,
+      "instrument": "SH600161",
+      "name": "天坛生物",
+      "score": -0.03637204438362766,
+      "close": null
+    },
+    {
+      "rank": 275,
+      "instrument": "SH688396",
+      "name": "华润微",
+      "score": -0.03686202755372663,
+      "close": null
+    },
+    {
+      "rank": 276,
+      "instrument": "SH601872",
+      "name": "招商轮船",
+      "score": -0.03740561211586299,
+      "close": null
+    },
+    {
+      "rank": 277,
+      "instrument": "SH601838",
+      "name": "成都银行",
+      "score": -0.03754665672248861,
+      "close": null
+    },
+    {
+      "rank": 278,
+      "instrument": "SH601211",
+      "name": "国泰海通",
+      "score": -0.03761697067816092,
+      "close": null
+    },
+    {
+      "rank": 279,
+      "instrument": "SZ000999",
+      "name": "华润三九",
+      "score": -0.03769785884313553,
+      "close": null
+    },
+    {
+      "rank": 280,
+      "instrument": "SZ002493",
+      "name": "荣盛石化",
+      "score": -0.03776072948105605,
+      "close": null
+    },
+    {
+      "rank": 281,
+      "instrument": "SH603893",
+      "name": "瑞芯微",
+      "score": -0.03858813360169226,
+      "close": null
+    },
+    {
+      "rank": 282,
+      "instrument": "SH688981",
+      "name": "中芯国际",
+      "score": -0.03864626238523875,
+      "close": null
+    },
+    {
+      "rank": 283,
+      "instrument": "SZ000661",
+      "name": "长春高新",
+      "score": -0.03960507501657434,
+      "close": null
+    },
+    {
+      "rank": 284,
+      "instrument": "SH601633",
+      "name": "长城汽车",
+      "score": -0.040250501820870165,
+      "close": null
+    },
+    {
+      "rank": 285,
+      "instrument": "SH600019",
+      "name": "宝钢股份",
+      "score": -0.04038131888072988,
+      "close": null
+    },
+    {
+      "rank": 286,
+      "instrument": "SH601236",
+      "name": "红塔证券",
+      "score": -0.04051280654089015,
+      "close": null
+    },
+    {
+      "rank": 287,
+      "instrument": "SZ002304",
+      "name": "洋河股份",
+      "score": -0.04098973973703765,
+      "close": null
+    },
+    {
+      "rank": 288,
+      "instrument": "SZ000625",
+      "name": "长安汽车",
+      "score": -0.04123829904248314,
+      "close": null
+    },
+    {
+      "rank": 289,
+      "instrument": "SH601238",
+      "name": "广汽集团",
+      "score": -0.04132110906681849,
+      "close": null
+    },
+    {
+      "rank": 290,
+      "instrument": "SZ000301",
+      "name": "东方盛虹",
+      "score": -0.041969162602512114,
+      "close": null
+    },
+    {
+      "rank": 291,
+      "instrument": "SZ000538",
+      "name": "云南白药",
+      "score": -0.04273727869514125,
+      "close": null
+    },
+    {
+      "rank": 292,
+      "instrument": "SZ000568",
+      "name": "泸州老窖",
+      "score": -0.044039918142100405,
+      "close": null
+    },
+    {
+      "rank": 293,
+      "instrument": "SZ000963",
+      "name": "华东医药",
+      "score": -0.0442838098754045,
+      "close": null
+    },
+    {
+      "rank": 294,
+      "instrument": "SH601669",
+      "name": "中国电建",
+      "score": -0.04605193808003723,
+      "close": null
+    },
+    {
+      "rank": 295,
+      "instrument": "SZ002049",
+      "name": "紫光国微",
+      "score": -0.047239964879199556,
+      "close": null
+    },
+    {
+      "rank": 296,
+      "instrument": "SH688009",
+      "name": "中国通号",
+      "score": -0.0472462869458977,
+      "close": null
+    },
+    {
+      "rank": 297,
+      "instrument": "SZ002709",
+      "name": "天赐材料",
+      "score": -0.04765497653395178,
+      "close": null
+    },
+    {
+      "rank": 298,
+      "instrument": "SH688012",
+      "name": "中微公司",
+      "score": -0.049223850074949844,
+      "close": null
+    },
+    {
+      "rank": 299,
+      "instrument": "SZ300408",
+      "name": "三环集团",
+      "score": -0.0576669681984557,
+      "close": null
+    }
+  ],
+  "strategy": {
+    "buys": [
+      {
+        "instrument": "SZ002938",
+        "name": "鹏鼎控股"
+      },
+      {
+        "instrument": "SH600482",
+        "name": "中国动力"
+      },
+      {
+        "instrument": "SZ002463",
+        "name": "沪电股份"
+      },
+      {
+        "instrument": "SZ000807",
+        "name": "云铝股份"
+      },
+      {
+        "instrument": "SH600875",
+        "name": "东方电气"
+      },
+      {
+        "instrument": "SH600547",
+        "name": "山东黄金"
+      },
+      {
+        "instrument": "SZ300782",
+        "name": "卓胜微"
+      },
+      {
+        "instrument": "SZ300502",
+        "name": "新易盛"
+      },
+      {
+        "instrument": "SH600183",
+        "name": "生益科技"
+      },
+      {
+        "instrument": "SH601138",
+        "name": "工业富联"
+      },
+      {
+        "instrument": "SZ300418",
+        "name": "昆仑万维"
+      },
+      {
+        "instrument": "SH600346",
+        "name": "恒力石化"
+      },
+      {
+        "instrument": "SZ002916",
+        "name": "深南电路"
+      },
+      {
+        "instrument": "SZ000975",
+        "name": "山金国际"
+      },
+      {
+        "instrument": "SH600066",
+        "name": "宇通客车"
+      },
+      {
+        "instrument": "SH600522",
+        "name": "中天科技"
+      },
+      {
+        "instrument": "SZ002475",
+        "name": "立讯精密"
+      },
+      {
+        "instrument": "SH600233",
+        "name": "圆通速递"
+      },
+      {
+        "instrument": "SZ000596",
+        "name": "古井贡酒"
+      },
+      {
+        "instrument": "SH603993",
+        "name": "洛阳钼业"
+      }
+    ],
+    "sells": [],
+    "holds": [],
+    "target_portfolio": [
+      {
+        "instrument": "SZ002938",
+        "name": "鹏鼎控股"
+      },
+      {
+        "instrument": "SH600482",
+        "name": "中国动力"
+      },
+      {
+        "instrument": "SZ002463",
+        "name": "沪电股份"
+      },
+      {
+        "instrument": "SZ000807",
+        "name": "云铝股份"
+      },
+      {
+        "instrument": "SH600875",
+        "name": "东方电气"
+      },
+      {
+        "instrument": "SH600547",
+        "name": "山东黄金"
+      },
+      {
+        "instrument": "SZ300782",
+        "name": "卓胜微"
+      },
+      {
+        "instrument": "SZ300502",
+        "name": "新易盛"
+      },
+      {
+        "instrument": "SH600183",
+        "name": "生益科技"
+      },
+      {
+        "instrument": "SH601138",
+        "name": "工业富联"
+      },
+      {
+        "instrument": "SZ300418",
+        "name": "昆仑万维"
+      },
+      {
+        "instrument": "SH600346",
+        "name": "恒力石化"
+      },
+      {
+        "instrument": "SZ002916",
+        "name": "深南电路"
+      },
+      {
+        "instrument": "SZ000975",
+        "name": "山金国际"
+      },
+      {
+        "instrument": "SH600066",
+        "name": "宇通客车"
+      },
+      {
+        "instrument": "SH600522",
+        "name": "中天科技"
+      },
+      {
+        "instrument": "SZ002475",
+        "name": "立讯精密"
+      },
+      {
+        "instrument": "SH600233",
+        "name": "圆通速递"
+      },
+      {
+        "instrument": "SZ000596",
+        "name": "古井贡酒"
+      },
+      {
+        "instrument": "SH603993",
+        "name": "洛阳钼业"
+      }
+    ]
+  },
+  "total_instruments_scored": 299,
+  "stock_name_map_path": "/home/lianjun/projects/qlib/examples/local_stock_names.json"
+}

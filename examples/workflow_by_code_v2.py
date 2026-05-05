@@ -43,9 +43,6 @@ from qlib.workflow import R
 from qlib.workflow.record_temp import SignalRecord, PortAnaRecord, SigAnaRecord
 from qlib.tests.data import GetData
 from qlib.tests.config import CSI300_BENCH, CSI300_MARKET, GBDT_MODEL
-from qlib.contrib.report.analysis_model.analysis_model_performance import (
-    model_performance_graph,
-)
 
 
 # ============================================================
@@ -593,6 +590,10 @@ def run_layer_analysis(
     print(f"  有效数据: {len(pred_label)} 条  ({dt_range.min()} ~ {dt_range.max()})")
 
     graph_names = graph_names or ["group_return", "pred_ic", "pred_autocorr"]
+    from qlib.contrib.report.analysis_model.analysis_model_performance import (
+        model_performance_graph,
+    )
+
     figures = model_performance_graph(
         pred_label=pred_label,
         N=n_groups,
