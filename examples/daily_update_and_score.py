@@ -4,7 +4,8 @@
 Daily scoring only.
 
 This script does **not** update qlib daily data. It assumes the provider directory
-already contains the latest usable bars/features, then:
+(default ``~/.qlib/qlib_data/cn_data`` or ``--qlib-data-dir``) already contains the
+latest usable bars/features, then:
 
   1. Load the trained model from a qlib recorder
   2. Run fresh inference for the latest/scoped trading date
@@ -286,14 +287,50 @@ def _get_price_from_baostock_normalize(instrument: str, date: str) -> Optional[f
         return None
 
 
+def _get_prices_from_qlib(instruments: List[str], date: str) -> Dict[str, float]:
+    """Load close from the active qlib provider (default ~/.qlib/qlib_data/cn_data after init_qlib)."""
+    from qlib.data import D
+
+    syms = [str(i) for i in instruments if i]
+    if not syms:
+        return {}
+    try:
+        df = D.features(
+            syms,
+            ["$close"],
+            start_time=date,
+            end_time=date,
+            freq="day",
+            disk_cache=False,
+        )
+    except Exception:
+        return {}
+    if df is None or df.empty:
+        return {}
+    col = "$close" if "$close" in df.columns else df.columns[0]
+    out: Dict[str, float] = {}
+    for idx, row in df.iterrows():
+        val = row[col]
+        if pd.isna(val):
+            continue
+        # D.features row index is (instrument, datetime)
+        inst = idx[0] if isinstance(idx, tuple) and len(idx) >= 2 else idx
+        out[str(inst)] = float(val)
+    return out
+
+
 def get_latest_prices(instruments: List[str], date: str) -> pd.Series:
     prices: Dict[str, float] = {}
+    qlib_map = _get_prices_from_qlib(instruments, date)
     for instrument in instruments:
-        raw_price = _get_price_from_baostock_source(instrument, date)
+        key = str(instrument)
+        raw_price = qlib_map.get(key)
+        if raw_price is None:
+            raw_price = _get_price_from_baostock_source(instrument, date)
         if raw_price is None:
             raw_price = _get_price_from_baostock_normalize(instrument, date)
         if raw_price is not None:
-            prices[str(instrument)] = raw_price
+            prices[key] = raw_price
     return pd.Series(prices, dtype=float)
 
 
